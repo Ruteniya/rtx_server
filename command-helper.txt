@@ -1,0 +1,9 @@
+evr:
+nest generate resource [name]
+
+separate:
+nest generate controller [name]
+nest generate service [name]
+nest generate module [name]
+
+
