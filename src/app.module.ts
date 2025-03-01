@@ -1,22 +1,11 @@
-// import { Module } from '@nestjs/common';
-// import { AppController } from './app.controller';
-// import { AppService } from './app.service';
-
-// @Module({
-//   imports: [],
-//   controllers: [AppController],
-//   providers: [AppService],
-// })
-// export class AppModule {}
-
-
 import { Module } from '@nestjs/common'
 import { SequelizeModule } from '@nestjs/sequelize'
 import { settings } from './settings'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
-import { GamesModule } from './games/games.module';
-import { CategoriesModule } from './categories/categories.module';
+import { GamesModule } from './games/games.module'
+import { CategoriesModule } from './categories/categories.module'
+import { GroupsModule } from './groups/groups.module'
 
 @Module({
   imports: [
@@ -34,7 +23,8 @@ import { CategoriesModule } from './categories/categories.module';
       dialectOptions: settings.database.dialectOptions
     }),
     GamesModule,
-    CategoriesModule
+    CategoriesModule,
+    GroupsModule
   ],
   controllers: [AppController],
   providers: [AppService]
