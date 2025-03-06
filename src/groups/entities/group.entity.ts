@@ -31,6 +31,6 @@ export class GroupEntity extends Model<GroupAttributes, CreationAttributes> {
   @Column({ type: DataType.UUID, allowNull: false })
   declare categoryId: string
 
-  @BelongsTo(() => CategoryEntity)
-  category: CategoryEntity
+  @BelongsTo(() => CategoryEntity, { foreignKey: 'categoryId', as: 'category' })
+  declare category: CategoryEntity
 }

@@ -19,19 +19,19 @@ export class CategoriesService {
     }
   }
 
-  // Create a new category
-  async create(createCategoryData: Pto.Categories.CreateCategory) {
+  async create(createCategoryData: Pto.Categories.CreateCategory): Promise<Pto.Categories.Category> {
     const category = await this.categoryRepo.create(createCategoryData)
     return this.mapEntityToPto(category)
   }
 
-  // Get all categories
-  async findAll(): Promise<Pto.Categories.Category[]> {
+  async findAll(): Promise<Pto.Categories.CategoryList> {
     const categories = await this.categoryRepo.findAll()
-    return categories.map((category) => this.mapEntityToPto(category))
+    return {
+      total: categories?.length,
+      items: categories?.map((category) => this.mapEntityToPto(category))
+    }
   }
 
-  // Get one category by ID
   async findOne(id: string): Promise<Pto.Categories.Category> {
     const category = await this.categoryRepo.findOne({
       where: { id }
@@ -41,8 +41,7 @@ export class CategoriesService {
     return this.mapEntityToPto(category)
   }
 
-  // Update an existing category
-  async update(id: string, updateCategoryData: Pto.Categories.UpdateCategory) {
+  async update(id: string, updateCategoryData: Pto.Categories.UpdateCategory): Promise<Pto.Categories.Category> {
     const category = await this.categoryRepo.findOne({
       where: { id }
     })
@@ -50,9 +49,10 @@ export class CategoriesService {
       throw new Error(`Category with id ${id} not found`)
     }
     await category.update(updateCategoryData)
+
+    return this.mapEntityToPto(category)
   }
 
-  // Delete a category by ID
   async remove(id: string) {
     const category = await this.categoryRepo.findOne({
       where: { id }

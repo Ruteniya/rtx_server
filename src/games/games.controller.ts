@@ -1,7 +1,6 @@
 import { Controller, Post, Body, Delete, Param, Get, Put } from '@nestjs/common'
 import { GamesService } from './games.service'
 import { Dto } from 'src/dto'
-import { UpdateGameDto } from 'src/dto/games'
 
 @Controller('games')
 export class GamesController {
@@ -19,7 +18,7 @@ export class GamesController {
 
   @Get()
   async findOne() {
-    return await this, this.gamesService.findOne()
+    return await this.gamesService.findOne()
   }
 
   @Delete(':id')

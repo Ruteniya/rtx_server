@@ -1,4 +1,5 @@
-import { Table, Column, Model, PrimaryKey, Default, DataType } from 'sequelize-typescript'
+import { Table, Column, Model, PrimaryKey, Default, DataType, BelongsToMany, HasMany } from 'sequelize-typescript'
+import { GroupEntity } from 'src/groups/entities/group.entity'
 
 export interface CategoryAttributes {
   id: string
@@ -36,4 +37,7 @@ export class CategoryEntity extends Model<CategoryAttributes, CreationAttributes
 
   @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
   declare updatedAt: Date
+
+  @HasMany(() => GroupEntity, { foreignKey: 'categoryId', as: 'groups' })
+  declare groups: GroupEntity[]
 }

@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { GroupEntity } from './entities/group.entity'
 import { Pto } from '@rtx/types'
+import { CategoryEntity } from 'src/categories/entities/category.entity'
 
 @Injectable()
 export class GroupsService {
@@ -15,7 +16,8 @@ export class GroupsService {
       id: group.id,
       name: group.name,
       numberOfParticipants: group.numberOfParticipants,
-      categoryId: group.categoryId
+      categoryId: group.categoryId,
+      category: group.category
     }
   }
 
@@ -25,7 +27,14 @@ export class GroupsService {
   }
 
   async findAll(): Promise<Pto.Groups.GroupList> {
-    const groups = await this.groupRepo.findAll()
+    const groups = await this.groupRepo.findAll({
+      include: [
+        {
+          model: CategoryEntity,
+          as: 'category'
+        }
+      ]
+    })
     return {
       total: groups.length,
       items: groups.map(this.mapEntityToPto)
