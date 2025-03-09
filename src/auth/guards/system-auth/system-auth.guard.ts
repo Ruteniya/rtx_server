@@ -3,7 +3,7 @@ import { AuthGuard } from '@nestjs/passport'
 import { Pto } from '@rtx/types'
 
 @Injectable()
-export class AdminAuthGuard extends AuthGuard('jwt') {
+export class SystemAuthGuard extends AuthGuard('jwt') {
   constructor() {
     super()
   }
@@ -17,8 +17,8 @@ export class AdminAuthGuard extends AuthGuard('jwt') {
       throw err || new UnauthorizedException(info)
     }
 
-    if (![Pto.Users.UserRole.Admin, Pto.Users.UserRole.SystemAdmin].includes(user.role)) {
-      throw new UnauthorizedException('Only admins can access this resource')
+    if (user.role !== Pto.Users.UserRole.SystemAdmin) {
+      throw new UnauthorizedException('Only system admins can access this resource')
     }
     return user
   }

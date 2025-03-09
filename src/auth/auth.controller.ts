@@ -5,6 +5,7 @@ import { Pto } from '@rtx/types'
 import { Response } from 'express'
 import { UsersService } from 'src/users/users.service'
 import { settings } from 'src/settings'
+import { JwtAuth, User } from 'src/decorators'
 
 @Controller('auth')
 export class AuthController {
@@ -35,20 +36,17 @@ export class AuthController {
     return res.redirect(redirectUrl.toString())
   }
 
-  @Post('group/login/:userId')
-  async loginToGroup(
-    @Param('userId') userId,
-    @Query() query: { groupId: string },
-    @Res() res
-  ): Promise<Pto.Users.User> {
-    const { groupId } = query
-    const user = await this.usersService.addToGroup(userId, groupId)
-    const accessToken = await this.authService.login(user.id)
+  @JwtAuth()
+  @Post('group/login/:groupId')
+  async loginToGroup(@User() user, @Param('groupId') groupId: string, @Res() res): Promise<Pto.Users.User> {
+    const returnedUser = await this.usersService.addToGroup(user.id, groupId)
+    const accessToken = await this.authService.login(returnedUser.id)
 
     this.setTokenToCookie(res, accessToken)
-    return res.json(user)
+    return res.json(returnedUser)
   }
 
+  @JwtAuth()
   @Post('logout')
   async logout(@Res() res): Promise<void> {
     res.clearCookie('access_token', {
@@ -56,6 +54,7 @@ export class AuthController {
       secure: settings.env.isProduction,
       maxAge: 0
     })
+    res.status(200).json({ message: 'Logout successful' })
   }
 
   private setTokenToCookie(res: Response, accessToken: string) {

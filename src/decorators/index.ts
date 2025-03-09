@@ -1,2 +1,5 @@
 export * from './admin-auth.decorator'
+export * from './auth.decorator'
 export * from './jwt-auth.decorator'
+export * from './system-auth.decorator'
+export * from './user.decorator'

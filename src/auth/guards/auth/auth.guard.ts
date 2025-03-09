@@ -1,9 +1,8 @@
-import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common'
+import { Injectable, ExecutionContext, UnauthorizedException, ForbiddenException } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
-import { Pto } from '@rtx/types'
 
 @Injectable()
-export class AdminAuthGuard extends AuthGuard('jwt') {
+export class CustomAuthGuard extends AuthGuard('jwt') {
   constructor() {
     super()
   }
@@ -17,9 +16,10 @@ export class AdminAuthGuard extends AuthGuard('jwt') {
       throw err || new UnauthorizedException(info)
     }
 
-    if (![Pto.Users.UserRole.Admin, Pto.Users.UserRole.SystemAdmin].includes(user.role)) {
-      throw new UnauthorizedException('Only admins can access this resource')
+    if (!user.groupId) {
+      throw new ForbiddenException('Forbidden. Please select a group')
     }
+
     return user
   }
 }

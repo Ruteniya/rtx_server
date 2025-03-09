@@ -15,6 +15,12 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
     })
   }
 
+  authorizationParams(options: any): object {
+    return {
+      ...options,
+      prompt: 'select_account'
+    }
+  }
   async validate(_: string, __: string, profile: any, done: VerifyCallback) {
     const firstName = profile.name.givenName
     const lastName = profile.name.familyName

@@ -21,7 +21,9 @@ export class UsersService {
       lastName: user.lastName,
       email: user.email,
       role: user.role,
-      groupId: user.groupId
+      groupId: user.groupId,
+
+      group: user.group
     }
   }
 
@@ -36,7 +38,7 @@ export class UsersService {
   }
 
   async findOne(id: string): Promise<Pto.Users.User> {
-    const user = await this.userEntity.findByPk(id)
+    const user = await this.userEntity.findByPk(id, { include: GroupEntity })
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`)
     }
@@ -52,7 +54,13 @@ export class UsersService {
   }
 
   async addToGroup(userId: string, groupId: string): Promise<Pto.Users.User> {
-    const user = await this.userEntity.findByPk(userId)
+    const user = await this.userEntity.findByPk(userId, {
+      include: {
+        model: this.groupEntity,
+        required: false
+      }
+    })
+
     if (!user) throw new NotFoundException('User not found')
 
     const group = await this.groupEntity.findByPk(groupId)

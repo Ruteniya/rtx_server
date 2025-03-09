@@ -1,5 +1,6 @@
 import { Pto } from '@rtx/types'
-import { Table, Column, Model, PrimaryKey, Default, DataType } from 'sequelize-typescript'
+import { Table, Column, Model, PrimaryKey, Default, DataType, BelongsTo, ForeignKey } from 'sequelize-typescript'
+import { GroupEntity } from 'src/groups/entities/group.entity'
 
 export interface UserAttributes {
   id: string
@@ -7,7 +8,7 @@ export interface UserAttributes {
   email: string
   firstName: string
   lastName: string
-  role: Pto.Users.UserRole
+  role: Pto.Users.UserRoleType
   createdAt: Date
   updatedAt: Date
 }
@@ -17,7 +18,7 @@ interface CreationAttributes extends Partial<UserAttributes> {
   email: string
   firstName: string
   lastName: string
-  role: Pto.Users.UserRole
+  role: Pto.Users.UserRoleType
 }
 
 @Table({ tableName: 'Users' })
@@ -27,6 +28,7 @@ export class UserEntity extends Model<UserAttributes, CreationAttributes> {
   @Column({ type: DataType.UUID })
   declare id: string
 
+  @ForeignKey(() => GroupEntity)
   @Column({ type: DataType.UUID, allowNull: true })
   declare groupId: string
 
@@ -40,11 +42,14 @@ export class UserEntity extends Model<UserAttributes, CreationAttributes> {
   declare lastName: string
 
   @Column({ type: DataType.STRING, allowNull: false })
-  declare role: Pto.Users.UserRole
+  declare role: Pto.Users.UserRoleType
 
   @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
   declare createdAt: Date
 
   @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
   declare updatedAt: Date
+
+  @BelongsTo(() => GroupEntity)
+  declare group?: GroupEntity
 }

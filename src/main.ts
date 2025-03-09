@@ -6,16 +6,19 @@ import { CustomLogger } from 'src/utils'
 import { settings } from './settings'
 import { AppModule } from './app.module'
 import { CustomParseUUIDPipe } from './pipes/custom-parse-uuid.pipe'
+import * as cookieParser from 'cookie-parser'
 
 async function bootstrap() {
   const logger = new CustomLogger(settings.appName)
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger, rawBody: true })
-  app.useGlobalPipes(new CustomParseUUIDPipe())
+  app.use(cookieParser())
 
   app.enableCors({
     origin: settings.frontendLink,
     credentials: true
   })
+
+  app.useGlobalPipes(new CustomParseUUIDPipe())
 
   try {
     await configure(app, logger)

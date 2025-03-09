@@ -8,13 +8,12 @@ import { ForbiddenException, Injectable } from '@nestjs/common'
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
-      jwtFromRequest: ExtractJwt.fromExtractors([(req) => req?.cookies?.accessToken]), // Extract token from the cookies,
+      jwtFromRequest: ExtractJwt.fromExtractors([(req) => req?.cookies?.access_token]),
       secretOrKey: settings.jwt.accessSecret
     })
   }
 
   validate(payload: AuthJwtPayload) {
-    if (!payload.sub.groupId) throw new ForbiddenException('Forbidden. Please select a group')
-    return { ...payload.sub }
+    return payload.sub
   }
 }
