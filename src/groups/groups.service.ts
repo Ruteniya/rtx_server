@@ -42,7 +42,7 @@ export class GroupsService {
   }
 
   async findOne(id: string): Promise<Pto.Groups.Group> {
-    const group = await this.groupRepo.findByPk(id)
+    const group = await this.groupRepo.findByPk(id, { include: CategoryEntity })
     if (!group) {
       throw new NotFoundException(`Group with id ${id} not found`)
     }

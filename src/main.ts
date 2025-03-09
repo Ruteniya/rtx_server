@@ -5,11 +5,18 @@ import { ValidationPipe } from '@nestjs/common'
 import { CustomLogger } from 'src/utils'
 import { settings } from './settings'
 import { AppModule } from './app.module'
+import { CustomParseUUIDPipe } from './pipes/custom-parse-uuid.pipe'
 
 async function bootstrap() {
   const logger = new CustomLogger(settings.appName)
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger, rawBody: true })
-  app.enableCors()
+  app.useGlobalPipes(new CustomParseUUIDPipe())
+
+  app.enableCors({
+    origin: settings.frontendLink,
+    credentials: true
+  })
+
   try {
     await configure(app, logger)
 

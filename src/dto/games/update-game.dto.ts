@@ -9,7 +9,6 @@ export class UpdateGameDto implements Pto.Games.UpdateGame {
 
   @IsOptional()
   @IsString()
-  @MaxLength(500)
   description?: string
 
   @IsOptional()

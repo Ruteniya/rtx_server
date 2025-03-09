@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseGuards } from '@nestjs/common'
 import { CategoriesService } from './categories.service'
 import { Dto } from 'src/dto'
 import { Pto } from '@rtx/types'
+import { JwtAuth } from 'src/decorators'
+import { User } from 'src/decorators/user.decorator'
 
 @Controller('categories')
 export class CategoriesController {
@@ -12,8 +14,10 @@ export class CategoriesController {
     return this.categoriesService.create(createCategoryDto)
   }
 
+  @JwtAuth()
   @Get()
-  findAll(): Promise<Pto.Categories.CategoryList> {
+  findAll(@User() user): Promise<Pto.Categories.CategoryList> {
+    console.log('user: ', user)
     return this.categoriesService.findAll()
   }
 

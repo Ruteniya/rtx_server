@@ -1,0 +1,50 @@
+import { Pto } from '@rtx/types'
+import { Table, Column, Model, PrimaryKey, Default, DataType } from 'sequelize-typescript'
+
+export interface UserAttributes {
+  id: string
+  groupId: string
+  email: string
+  firstName: string
+  lastName: string
+  role: Pto.Users.UserRole
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface CreationAttributes extends Partial<UserAttributes> {
+  groupId?: string
+  email: string
+  firstName: string
+  lastName: string
+  role: Pto.Users.UserRole
+}
+
+@Table({ tableName: 'Users' })
+export class UserEntity extends Model<UserAttributes, CreationAttributes> {
+  @PrimaryKey
+  @Default(DataType.UUIDV4)
+  @Column({ type: DataType.UUID })
+  declare id: string
+
+  @Column({ type: DataType.UUID, allowNull: true })
+  declare groupId: string
+
+  @Column({ type: DataType.STRING, allowNull: false, unique: true })
+  declare email: string
+
+  @Column({ type: DataType.STRING, allowNull: false })
+  declare firstName: string
+
+  @Column({ type: DataType.STRING, allowNull: false })
+  declare lastName: string
+
+  @Column({ type: DataType.STRING, allowNull: false })
+  declare role: Pto.Users.UserRole
+
+  @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
+  declare createdAt: Date
+
+  @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
+  declare updatedAt: Date
+}

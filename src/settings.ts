@@ -46,19 +46,21 @@ export const settings = {
   },
   database: postgresSettings,
   apiBodySize: 52428800,
-  frontendLink: process.env.FRONTEND_LINK || 'http://localhost:3000',
+  frontendLink: process.env.FRONTEND_LINK || 'http://localhost:5173',
   backendLink: process.env.BACKEND_LINK || 'http://localhost:4496',
-  assets: {
+  assets: {},
+  googleOAuth: {
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_SECRET,
+    callbackURL: process.env.GOOGLE_CALLBACK_URL
   },
   jwt: {
-    accessSecret: process.env.JWT_SECRET,
-    accessExpiresIn: '1d',
-    refreshSecret: process.env.JWT_REFRESH_SECRET,
-    refreshExpiresIn: '30d'
+    accessSecret: process.env.JWT_SECRET || 'secret',
+    accessExpiresIn: process.env.JWT_EXPIRE_IN,
+    cookieExpiresIn: 7 * 24 * 60 * 60 * 1000 // 7 days in miliseconds
   }
 }
 
 if (!settings.logger.suppressDebug) {
   settings.logger.levels.push('debug')
 }
-
