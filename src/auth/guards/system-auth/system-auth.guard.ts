@@ -18,7 +18,7 @@ export class SystemAuthGuard extends AuthGuard('jwt') {
     }
 
     if (user.role !== Pto.Users.UserRole.SystemAdmin) {
-      throw new UnauthorizedException('Only system admins can access this resource')
+      throw new UnauthorizedException(Pto.Errors.Messages.ACCESS_FORBIDDEN)
     }
     return user
   }

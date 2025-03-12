@@ -1,5 +1,6 @@
 import { Injectable, ExecutionContext, UnauthorizedException, ForbiddenException } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
+import { Pto } from '@rtx/types'
 
 @Injectable()
 export class CustomAuthGuard extends AuthGuard('jwt') {
@@ -17,7 +18,7 @@ export class CustomAuthGuard extends AuthGuard('jwt') {
     }
 
     if (!user.groupId) {
-      throw new ForbiddenException('Forbidden. Please select a group')
+      throw new ForbiddenException(Pto.Errors.Messages.NO_GROUP_FORBIDDEN)
     }
 
     return user

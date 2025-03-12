@@ -25,7 +25,7 @@ export class GamesService {
     const existingGame = await this.gameRepo.findOne()
 
     if (existingGame) {
-      throw new BadRequestException('A game already exists. Delete it and try again')
+      throw new BadRequestException(Pto.Errors.Messages.GAME_ALREADY_EXISTS)
     }
 
     const game = await this.gameRepo.create(createGame)
@@ -37,7 +37,7 @@ export class GamesService {
     const game = await this.gameRepo.findByPk(id)
 
     if (!game) {
-      throw new NotFoundException('Game not found')
+      throw new NotFoundException(Pto.Errors.Messages.GAME_NOT_FOUND)
     }
 
     await game.update(updateGame)
@@ -48,7 +48,7 @@ export class GamesService {
   async findOne(): Promise<Pto.Games.Game> {
     const game = await this.gameRepo.findOne()
 
-    if (!game) throw new NotFoundException('Game not found')
+    if (!game) throw new NotFoundException(Pto.Errors.Messages.GAME_NOT_FOUND)
 
     return this.mapEntityToPto(game)
   }
@@ -59,7 +59,7 @@ export class GamesService {
     })
 
     if (!game) {
-      throw new Error('Game not found')
+      throw new Error(Pto.Errors.Messages.GAME_NOT_FOUND)
     }
 
     await game.destroy()

@@ -37,7 +37,7 @@ export class CategoriesService {
       where: { id }
     })
 
-    if (!category) throw new NotFoundException('Category not found')
+    if (!category) throw new NotFoundException(Pto.Errors.Messages.CATEGORY_NOT_FOUND)
     return this.mapEntityToPto(category)
   }
 
@@ -46,7 +46,7 @@ export class CategoriesService {
       where: { id }
     })
     if (!category) {
-      throw new Error(`Category with id ${id} not found`)
+      throw new Error(Pto.Errors.Messages.CATEGORY_NOT_FOUND)
     }
     await category.update(updateCategoryData)
 
@@ -58,7 +58,7 @@ export class CategoriesService {
       where: { id }
     })
     if (!category) {
-      throw new Error(`Category with id ${id} not found`)
+      throw new Error(Pto.Errors.Messages.CATEGORY_NOT_FOUND)
     }
     return category.destroy()
   }

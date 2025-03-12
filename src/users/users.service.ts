@@ -40,7 +40,7 @@ export class UsersService {
   async findOne(id: string): Promise<Pto.Users.User> {
     const user = await this.userEntity.findByPk(id, { include: GroupEntity })
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`)
+      throw new NotFoundException(Pto.Errors.Messages.USER_NOT_FOUND)
     }
     return this.mapEntityToPto(user)
   }
@@ -61,10 +61,10 @@ export class UsersService {
       }
     })
 
-    if (!user) throw new NotFoundException('User not found')
+    if (!user) throw new NotFoundException(Pto.Errors.Messages.USER_NOT_FOUND)
 
     const group = await this.groupEntity.findByPk(groupId)
-    if (!group) throw new NotFoundException('Group not found')
+    if (!group) throw new NotFoundException(Pto.Errors.Messages.GROUP_NOT_FOUND)
 
     await user.update({ groupId })
 
@@ -74,7 +74,7 @@ export class UsersService {
   async remove(id: string): Promise<void> {
     const user = await this.userEntity.findByPk(id)
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`)
+      throw new NotFoundException(Pto.Errors.Messages.USER_NOT_FOUND)
     }
     await user.destroy()
   }
