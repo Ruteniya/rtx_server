@@ -1,17 +1,20 @@
 import { Pto } from '@rtx/types'
 import { IsString, IsOptional, MaxLength, IsInt, Min, IsEnum } from 'class-validator'
 
-export class CreateNodeDto implements Pto.Nodes.CreateNode {
+export class UpdateNodeDto implements Pto.Nodes.UpdateNode {
   @IsString()
   @MaxLength(255)
-  name: string
+  @IsOptional()
+  name?: string
 
   @IsString()
+  @IsOptional()
   @IsEnum(Pto.Nodes.AnswerType)
-  answerType: Pto.Nodes.AnswerType
+  answerType?: Pto.Nodes.AnswerType
 
   @IsString()
-  question: string
+  @IsOptional()
+  question?: string
 
   @IsOptional()
   @IsString()
@@ -25,9 +28,10 @@ export class CreateNodeDto implements Pto.Nodes.CreateNode {
   @IsString()
   correctAnswer?: string
 
+  @IsOptional()
   @IsInt()
   @Min(0)
-  points: number
+  points?: number
 
   @IsOptional()
   @IsString()
