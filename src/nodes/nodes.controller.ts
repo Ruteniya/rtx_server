@@ -10,35 +10,36 @@ export class NodesController {
   @SystemAuth()
   @Post()
   create(@Body() createNodeDto: Dto.Nodes.CreateNodeDto) {
-    return this.nodesService.create(createNodeDto)
+    return this.nodesService.createNode(createNodeDto)
   }
 
   @Auth()
-  @Get()
+  @Get('short')
   findAllShortVersion() {
-    return this.nodesService.findAll()
+    return this.nodesService.findAllNodesShort()
   }
 
   @AdminAuth()
   @Get()
   findAll() {
-    return this.nodesService.findAll()
+    return this.nodesService.findAllNodes()
   }
 
   @AdminAuth()
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.nodesService.findOne(id)
+    return this.nodesService.findNode(id)
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateNodeDto: Dto.Nodes.UpdateNodeDto) {
-  //   return this.nodesService.update(+id, updateNodeDto);
-  // }
+  @AdminAuth()
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateNodeDto: Dto.Nodes.UpdateNodeDto) {
+    return this.nodesService.updateNode(id, updateNodeDto)
+  }
 
   @SystemAuth()
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.nodesService.remove(id)
+    return this.nodesService.removeNode(id)
   }
 }

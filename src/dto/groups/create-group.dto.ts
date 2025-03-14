@@ -1,5 +1,5 @@
 import { Pto } from '@rtx/types'
-import { IsNotEmpty, IsString, IsInt, Min, MaxLength } from 'class-validator'
+import { IsNotEmpty, IsString, IsInt, Min, MaxLength, IsUUID } from 'class-validator'
 
 export class CreateGroupDto implements Pto.Groups.CreateGroup {
   @IsString()
@@ -11,6 +11,7 @@ export class CreateGroupDto implements Pto.Groups.CreateGroup {
   numberOfParticipants: number
 
   @IsString()
+  @IsUUID()
   @IsNotEmpty()
   categoryId: string
 }

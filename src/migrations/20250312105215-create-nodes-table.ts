@@ -18,11 +18,11 @@ export const up = async (queryInterface: QueryInterface) => {
       allowNull: false
     },
     question: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: false
     },
     questionImage: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: true
     },
     adminDescription: {
@@ -30,7 +30,7 @@ export const up = async (queryInterface: QueryInterface) => {
       allowNull: true
     },
     correctAnswer: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: true
     },
     points: {

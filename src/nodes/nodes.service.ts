@@ -10,7 +10,7 @@ export class NodesService {
     private readonly nodeRepo: typeof NodeEntity
   ) {}
 
-  private mapEntityToPto(node: NodeEntity): Pto.Nodes.Node {
+  private mapNodeToPto(node: NodeEntity): Pto.Nodes.Node {
     return {
       id: node.id,
       name: node.name,
@@ -24,7 +24,7 @@ export class NodesService {
     }
   }
 
-  private mapEntityToShortPto(node: NodeEntity): Pto.Nodes.ShortNode {
+  private mapNodeToShortPto(node: NodeEntity): Pto.Nodes.ShortNode {
     return {
       id: node.id,
       name: node.name,
@@ -36,43 +36,43 @@ export class NodesService {
     }
   }
 
-  async create(createNodeDto: Pto.Nodes.CreateNode): Promise<Pto.Nodes.Node> {
+  async createNode(createNodeDto: Pto.Nodes.CreateNode): Promise<Pto.Nodes.Node> {
     const existingNode = await this.nodeRepo.findOne({ where: { name: createNodeDto.name } })
     if (existingNode) {
       throw new BadRequestException(Pto.Errors.Messages.NODE_ALREADY_EXISTS)
     }
     const node = await this.nodeRepo.create(createNodeDto)
-    return this.mapEntityToPto(node)
+    return this.mapNodeToPto(node)
   }
 
-  async findAllShortVersion(): Promise<Pto.Nodes.ShortNodeList> {
-    const nodes = await this.nodeRepo.findAll()
-    return { items: nodes.map(this.mapEntityToShortPto), total: nodes.length }
+  async findAllNodesShort(): Promise<Pto.Nodes.ShortNodeList> {
+    const nodes = await this.nodeRepo.findAll({ order: [['name', 'ASC']] })
+    return { items: nodes.map(this.mapNodeToShortPto), total: nodes.length }
   }
 
-  async findAll(): Promise<Pto.Nodes.NodeList> {
-    const nodes = await this.nodeRepo.findAll()
-    return { items: nodes.map(this.mapEntityToPto), total: nodes.length }
+  async findAllNodes(): Promise<Pto.Nodes.NodeList> {
+    const nodes = await this.nodeRepo.findAll({ order: [['name', 'ASC']] })
+    return { items: nodes.map(this.mapNodeToPto), total: nodes.length }
   }
 
-  async findOne(id: string): Promise<Pto.Nodes.Node> {
+  async findNode(id: string): Promise<Pto.Nodes.Node> {
     const node = await this.nodeRepo.findByPk(id)
     if (!node) {
       throw new NotFoundException(Pto.Errors.Messages.NODE_NOT_FOUND)
     }
-    return this.mapEntityToPto(node)
+    return this.mapNodeToPto(node)
   }
 
-  // async update(id: string, updateNodeDto: Pto.Nodes.UpdateNode): Promise<Pto.Nodes.Node> {
-  //   const node = await this.nodeRepo.findByPk(id)
-  //   if (!node) {
-  //     throw new NotFoundException(Pto.Errors.Messages.NODE_NOT_FOUND)
-  //   }
-  //   await node.update(updateNodeDto)
-  //   return this.mapEntityToPto(node)
-  // }
+  async updateNode(id: string, updateNodeDto: Pto.Nodes.UpdateNode): Promise<Pto.Nodes.Node> {
+    const node = await this.nodeRepo.findByPk(id)
+    if (!node) {
+      throw new NotFoundException(Pto.Errors.Messages.NODE_NOT_FOUND)
+    }
+    await node.update(updateNodeDto)
+    return this.mapNodeToPto(node)
+  }
 
-  async remove(id: string): Promise<void> {
+  async removeNode(id: string): Promise<void> {
     const node = await this.nodeRepo.findByPk(id)
     if (!node) {
       throw new NotFoundException(Pto.Errors.Messages.NODE_NOT_FOUND)

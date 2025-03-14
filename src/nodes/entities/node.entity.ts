@@ -1,5 +1,6 @@
 import { Pto } from '@rtx/types'
-import { Table, Column, Model, PrimaryKey, Default, DataType, Unique } from 'sequelize-typescript'
+import { Table, Column, Model, PrimaryKey, Default, DataType, Unique, HasMany } from 'sequelize-typescript'
+import { AnswerEntity } from './answer.entity'
 
 export interface NodeAttributes {
   id: string
@@ -59,4 +60,7 @@ export class NodeEntity extends Model<NodeAttributes, CreationAttributes> {
 
   @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
   declare updatedAt: Date
+
+  @HasMany(() => AnswerEntity)
+  declare answers: AnswerEntity[]
 }

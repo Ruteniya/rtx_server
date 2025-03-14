@@ -18,6 +18,7 @@ export class SystemAuthGuard extends AuthGuard('jwt') {
     }
 
     if (user.role !== Pto.Users.UserRole.SystemAdmin) {
+      console.log('лише для систем адмінів')
       throw new UnauthorizedException(Pto.Errors.Messages.ACCESS_FORBIDDEN)
     }
     return user
