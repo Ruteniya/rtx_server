@@ -1,13 +1,17 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { NodeEntity } from './entities/node.entity'
 import { Pto } from '@rtx/types'
+import { AnswerEntity } from './entities/answer.entity'
 
 @Injectable()
 export class NodesService {
   constructor(
     @InjectModel(NodeEntity)
-    private readonly nodeRepo: typeof NodeEntity
+    private readonly nodeRepo: typeof NodeEntity,
+
+    @InjectModel(AnswerEntity)
+    private readonly answerRepo: typeof AnswerEntity
   ) {}
 
   private mapNodeToPto(node: NodeEntity): Pto.Nodes.Node {
@@ -68,6 +72,9 @@ export class NodesService {
     if (!node) {
       throw new NotFoundException(Pto.Errors.Messages.NODE_NOT_FOUND)
     }
+
+    const answer = await this.answerRepo.findOne({ where: { nodeId: node.id } })
+    if (answer) throw new ForbiddenException(Pto.Errors.Messages.NODE_CANNOT_BE_UPDATED)
     await node.update(updateNodeDto)
     return this.mapNodeToPto(node)
   }

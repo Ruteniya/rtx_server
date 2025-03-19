@@ -1,17 +1,19 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { Pto } from '@rtx/types'
-import { UserEntity } from './entities/user.entity'
+import { UserAttributes, UserEntity } from './entities/user.entity'
 import { InjectModel } from '@nestjs/sequelize'
 import { GroupEntity } from 'src/groups/entities/group.entity'
+import { Op, WhereOptions } from 'sequelize'
+import { first } from 'rxjs'
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(UserEntity)
-    private readonly userEntity: typeof UserEntity,
+    private readonly userRepo: typeof UserEntity,
 
     @InjectModel(GroupEntity)
-    private readonly groupEntity: typeof GroupEntity
+    private readonly groupRepo: typeof GroupEntity
   ) {}
 
   private mapEntityToPto(user: UserEntity): Pto.Users.User {
@@ -28,17 +30,12 @@ export class UsersService {
   }
 
   async create(createUserData: Pto.Users.CreateUser): Promise<Pto.Users.User> {
-    const user = await this.userEntity.create({ ...createUserData, role: Pto.Users.UserRole.User })
+    const user = await this.userRepo.create({ ...createUserData, role: Pto.Users.UserRole.User })
     return this.mapEntityToPto(user)
   }
 
-  async findAll(): Promise<Pto.Users.UserList> {
-    const users = await this.userEntity.findAll()
-    return { total: users.length, items: users.map(this.mapEntityToPto) }
-  }
-
   async findOne(id: string): Promise<Pto.Users.User> {
-    const user = await this.userEntity.findByPk(id, { include: GroupEntity })
+    const user = await this.userRepo.findByPk(id, { include: GroupEntity })
     if (!user) {
       throw new NotFoundException(Pto.Errors.Messages.USER_NOT_FOUND)
     }
@@ -46,7 +43,7 @@ export class UsersService {
   }
 
   async findByEmail(email: string): Promise<Pto.Users.User | null> {
-    const user = await this.userEntity.findOne({ where: { email } })
+    const user = await this.userRepo.findOne({ where: { email } })
     if (!user) {
       return null
     }
@@ -54,16 +51,16 @@ export class UsersService {
   }
 
   async addToGroup(userId: string, groupId: string): Promise<Pto.Users.User> {
-    const user = await this.userEntity.findByPk(userId, {
+    const user = await this.userRepo.findByPk(userId, {
       include: {
-        model: this.groupEntity,
+        model: this.groupRepo,
         required: false
       }
     })
 
     if (!user) throw new NotFoundException(Pto.Errors.Messages.USER_NOT_FOUND)
 
-    const group = await this.groupEntity.findByPk(groupId)
+    const group = await this.groupRepo.findByPk(groupId)
     if (!group) throw new NotFoundException(Pto.Errors.Messages.GROUP_NOT_FOUND)
 
     await user.update({ groupId })
@@ -71,8 +68,49 @@ export class UsersService {
     return this.mapEntityToPto(user)
   }
 
+  async changeUserRole(userId: string, newRole: Pto.Users.UserRoleType): Promise<Pto.Users.User> {
+    const user = await this.userRepo.findByPk(userId)
+    if (!user) {
+      throw new NotFoundException(Pto.Errors.Messages.USER_NOT_FOUND)
+    }
+
+    user.role = newRole
+    await user.save()
+
+    return this.mapEntityToPto(user)
+  }
+
+  async getGroupMembers(groupId: string): Promise<Pto.Users.UserList> {
+    const result = await this.userRepo.findAndCountAll({ where: { groupId } })
+    return { total: result.count, items: result.rows.map((user) => this.mapEntityToPto(user)) }
+  }
+
+  async getAll(query: Pto.Users.UsersListQuery): Promise<Pto.Users.UserList> {
+    const { searchText, page = 1, size = 10 } = query
+    const where: WhereOptions<UserAttributes> = {}
+    if (searchText) {
+      where[Op.or] = [
+        { email: { [Op.iLike]: `%${searchText}%` } },
+        { firstName: { [Op.iLike]: `%${searchText}%` } },
+        { lastName: { [Op.iLike]: `%${searchText}%` } },
+        { '$group.name$': { [Op.iLike]: `%${searchText}%` } }
+      ]
+    }
+    const result = await this.userRepo.findAndCountAll({
+      distinct: true,
+      col: 'id',
+      where,
+      offset: (page - 1) * size,
+      limit: size,
+      order: [['updatedAt', 'DESC']],
+      include: [GroupEntity]
+    })
+
+    return { total: result.count, items: result.rows.map((answer) => this.mapEntityToPto(answer)) }
+  }
+
   async remove(id: string): Promise<void> {
-    const user = await this.userEntity.findByPk(id)
+    const user = await this.userRepo.findByPk(id)
     if (!user) {
       throw new NotFoundException(Pto.Errors.Messages.USER_NOT_FOUND)
     }

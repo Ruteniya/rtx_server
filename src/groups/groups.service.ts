@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/sequelize'
 import { GroupEntity } from './entities/group.entity'
 import { Pto } from '@rtx/types'
 import { CategoryEntity } from 'src/categories/entities/category.entity'
+import { UserEntity } from 'src/users/entities/user.entity'
 
 @Injectable()
 export class GroupsService {
@@ -18,6 +19,15 @@ export class GroupsService {
       numberOfParticipants: group.numberOfParticipants,
       categoryId: group.categoryId,
       category: group.category
+    }
+  }
+
+  private mapEntityToPopulatedPto(group: GroupEntity): Pto.Groups.PopulatedGroup {
+    const groupPto = this.mapEntityToPto(group)
+    return {
+      ...groupPto,
+      category: group.category,
+      users: group.users
     }
   }
 
@@ -39,6 +49,14 @@ export class GroupsService {
       total: groups.length,
       items: groups.map(this.mapEntityToPto)
     }
+  }
+
+  async findPopulatedOne(id: string): Promise<Pto.Groups.Group> {
+    const group = await this.groupRepo.findByPk(id, { include: [CategoryEntity, UserEntity] })
+    if (!group) {
+      throw new NotFoundException(Pto.Errors.Messages.GROUP_NOT_FOUND)
+    }
+    return this.mapEntityToPopulatedPto(group)
   }
 
   async findOne(id: string): Promise<Pto.Groups.Group> {

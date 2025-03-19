@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, ValidationPipe, Query } from '@nestjs/common'
+import { Controller, Get, Post, Body, ValidationPipe, Query, Patch, UsePipes } from '@nestjs/common'
 import { Dto } from 'src/dto'
 import { AdminAuth, Auth, User } from 'src/decorators'
 import { JwtUser } from 'src/auth/types/auth.jwtPayload'
@@ -17,7 +17,9 @@ export class AnswerController {
 
   @AdminAuth()
   @Get('/all')
-  getAllnswers(@Query() query: Pto.Answers.AnswerListQuery) {
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  getAllnswers(@Query() query: Dto.Answers.AnswerListQuery) {
+    console.log('query:', query)
     return this.answerService.getAllAnswers(query)
   }
 
@@ -25,5 +27,11 @@ export class AnswerController {
   @Post()
   giveAnswer(@Body(ValidationPipe) giveAnswerDto: Dto.Answers.AddAnswerDto, @User() user) {
     return this.answerService.giveAnswer(giveAnswerDto, user)
+  }
+
+  @AdminAuth()
+  @Patch('/evaluate')
+  evaluateAnswers(@Body(ValidationPipe) evaluateAnswersDto: Dto.Answers.EvaluateAnswerDto[]) {
+    return this.answerService.evaluateAnswers(evaluateAnswersDto)
   }
 }

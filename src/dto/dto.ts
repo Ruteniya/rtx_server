@@ -1,5 +1,6 @@
 export * as Answers from './answers'
 export * as Categories from './categories'
+export * as Common from './common'
 export * as Games from './games'
 export * as Groups from './groups'
 export * as Nodes from './nodes'

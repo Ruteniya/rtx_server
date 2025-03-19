@@ -20,6 +20,11 @@ export class GroupsController {
     return this.groupsService.findAll()
   }
 
+  @Get('/populated/:id')
+  async findPopulatedOne(@Param('id') id: string) {
+    return this.groupsService.findPopulatedOne(id)
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.groupsService.findOne(id)
