@@ -2,10 +2,14 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { NodesService } from './nodes.service'
 import { Dto } from 'src/dto'
 import { AdminAuth, Auth, SystemAuth } from 'src/decorators'
+import { GamesService } from 'src/games/games.service'
 
 @Controller('nodes')
 export class NodesController {
-  constructor(private readonly nodesService: NodesService) {}
+  constructor(
+    private readonly nodesService: NodesService,
+    private readonly gamesService: GamesService
+  ) {}
 
   @SystemAuth()
   @Post()
@@ -15,7 +19,9 @@ export class NodesController {
 
   @Auth()
   @Get('short')
-  findAllShortVersion() {
+  async findAllShortVersion() {
+    await this.gamesService.checkGameTime()
+
     return this.nodesService.findAllNodesShort()
   }
 
@@ -31,7 +37,7 @@ export class NodesController {
     return this.nodesService.findNode(id)
   }
 
-  @AdminAuth()
+  @SystemAuth()
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateNodeDto: Dto.Nodes.UpdateNodeDto) {
     return this.nodesService.updateNode(id, updateNodeDto)

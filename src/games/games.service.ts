@@ -21,6 +21,27 @@ export class GamesService {
     }
   }
 
+  // Method to check whether the game is within the allowed time
+  async checkGameTime(checkEndDate: boolean = true): Promise<void> {
+    const game = await this.gameRepo.findOne()
+
+    if (!game) {
+      throw new NotFoundException(Pto.Errors.Messages.GAME_NOT_FOUND)
+    }
+
+    const currentTime = new Date()
+
+    if (currentTime < new Date(game.startDate)) {
+      throw new BadRequestException('Гра ще не розпочалась')
+    }
+
+    if (checkEndDate) {
+      if (currentTime > new Date(game.endDate)) {
+        throw new BadRequestException('Гра закінчилась')
+      }
+    }
+  }
+
   async create(createGame: Pto.Games.CreateGame): Promise<Pto.Games.Game> {
     const existingGame = await this.gameRepo.findOne()
 

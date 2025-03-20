@@ -11,7 +11,6 @@ export class AnswerListQuery extends PaginationDto implements Pto.Answers.Answer
   @IsOptional()
   @Transform(({ value }) => {
     if (value === undefined) return value
-    console.log('value: correct', value)
     if (typeof value === 'string')
       return value.toLowerCase() === 'true' // Враховуємо можливі варіанти в регістрі
     else return value
@@ -22,7 +21,6 @@ export class AnswerListQuery extends PaginationDto implements Pto.Answers.Answer
   @IsOptional()
   @Transform(({ value }) => {
     if (value === undefined) return value
-    console.log('value: correct', value)
     if (typeof value === 'string')
       return value.toLowerCase() === 'true' // Враховуємо можливі варіанти в регістрі
     else return value

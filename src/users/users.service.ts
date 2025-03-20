@@ -5,6 +5,7 @@ import { InjectModel } from '@nestjs/sequelize'
 import { GroupEntity } from 'src/groups/entities/group.entity'
 import { Op, WhereOptions } from 'sequelize'
 import { first } from 'rxjs'
+import { CategoryEntity } from 'src/categories/entities/category.entity'
 
 @Injectable()
 export class UsersService {
@@ -29,17 +30,36 @@ export class UsersService {
     }
   }
 
+  private mapEntityToPopulatedPto(user: UserEntity): Pto.Users.PopulatedUser {
+    const pto = this.mapEntityToPto(user)
+    return {
+      ...pto,
+      group: user.group
+    }
+  }
+
   async create(createUserData: Pto.Users.CreateUser): Promise<Pto.Users.User> {
     const user = await this.userRepo.create({ ...createUserData, role: Pto.Users.UserRole.User })
     return this.mapEntityToPto(user)
   }
 
-  async findOne(id: string): Promise<Pto.Users.User> {
-    const user = await this.userRepo.findByPk(id, { include: GroupEntity })
+  async findOne(id: string): Promise<Pto.Users.PopulatedUser> {
+    const user = await this.userRepo.findByPk(id, {
+      include: {
+        model: GroupEntity,
+        include: [
+          {
+            model: CategoryEntity,
+            required: true
+          }
+        ],
+        required: true
+      }
+    })
     if (!user) {
       throw new NotFoundException(Pto.Errors.Messages.USER_NOT_FOUND)
     }
-    return this.mapEntityToPto(user)
+    return this.mapEntityToPopulatedPto(user)
   }
 
   async findByEmail(email: string): Promise<Pto.Users.User | null> {
@@ -80,11 +100,6 @@ export class UsersService {
     return this.mapEntityToPto(user)
   }
 
-  async getGroupMembers(groupId: string): Promise<Pto.Users.UserList> {
-    const result = await this.userRepo.findAndCountAll({ where: { groupId } })
-    return { total: result.count, items: result.rows.map((user) => this.mapEntityToPto(user)) }
-  }
-
   async getAll(query: Pto.Users.UsersListQuery): Promise<Pto.Users.UserList> {
     const { searchText, page = 1, size = 10 } = query
     const where: WhereOptions<UserAttributes> = {}
@@ -106,7 +121,7 @@ export class UsersService {
       include: [GroupEntity]
     })
 
-    return { total: result.count, items: result.rows.map((answer) => this.mapEntityToPto(answer)) }
+    return { total: result.count, items: result.rows.map((answer) => this.mapEntityToPopulatedPto(answer)) }
   }
 
   async remove(id: string): Promise<void> {
@@ -115,5 +130,11 @@ export class UsersService {
       throw new NotFoundException(Pto.Errors.Messages.USER_NOT_FOUND)
     }
     await user.destroy()
+  }
+
+  //seed
+  async createSystemAdmin(createUserData: Pto.Users.CreateUser): Promise<Pto.Users.User> {
+    const user = await this.userRepo.create({ ...createUserData, role: Pto.Users.UserRole.SystemAdmin })
+    return this.mapEntityToPto(user)
   }
 }

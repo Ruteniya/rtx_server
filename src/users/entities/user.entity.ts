@@ -51,5 +51,5 @@ export class UserEntity extends Model<UserAttributes, CreationAttributes> {
   declare updatedAt: Date
 
   @BelongsTo(() => GroupEntity)
-  declare group?: GroupEntity
+  declare group: GroupEntity
 }

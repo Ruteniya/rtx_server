@@ -3,15 +3,19 @@ import { Dto } from 'src/dto'
 import { AdminAuth, Auth, User } from 'src/decorators'
 import { JwtUser } from 'src/auth/types/auth.jwtPayload'
 import { AnswersService } from './answers.service'
-import { Pto } from '@rtx/types'
+import { GamesService } from 'src/games/games.service'
 
 @Controller('answers')
 export class AnswerController {
-  constructor(private readonly answerService: AnswersService) {}
+  constructor(
+    private readonly answerService: AnswersService,
+    private readonly gamesService: GamesService
+  ) {}
 
   @Auth()
   @Get()
-  getAnswers(@User() user: JwtUser) {
+  async getAnswers(@User() user: JwtUser) {
+    await this.gamesService.checkGameTime()
     return this.answerService.getAnswers(user.groupId)
   }
 
@@ -19,13 +23,14 @@ export class AnswerController {
   @Get('/all')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   getAllnswers(@Query() query: Dto.Answers.AnswerListQuery) {
-    console.log('query:', query)
     return this.answerService.getAllAnswers(query)
   }
 
   @Auth()
   @Post()
-  giveAnswer(@Body(ValidationPipe) giveAnswerDto: Dto.Answers.AddAnswerDto, @User() user) {
+  async giveAnswer(@Body(ValidationPipe) giveAnswerDto: Dto.Answers.AddAnswerDto, @User() user) {
+    await this.gamesService.checkGameTime(true)
+
     return this.answerService.giveAnswer(giveAnswerDto, user)
   }
 

@@ -1,6 +1,4 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common'
-import { SequelizeModule } from '@nestjs/sequelize'
-import { settings } from './settings'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { GamesModule } from './games/games.module'
@@ -8,33 +6,40 @@ import { CategoriesModule } from './categories/categories.module'
 import { GroupsModule } from './groups/groups.module'
 import { AuthModule } from './auth/auth.module'
 import { UsersModule } from './users/users.module'
-import { NodesModule } from './nodes/nodes.module';
+import { NodesModule } from './nodes/nodes.module'
+import { ResultsModule } from './results/results.module'
 import * as cookieParser from 'cookie-parser'
+import { CategoriesService } from './categories/categories.service'
+import { GroupsService } from './groups/groups.service'
+import { UsersService } from './users/users.service'
+import { Seeder } from './seeder/seeder'
+import { SequelizeModule } from '@nestjs/sequelize'
+import { UserEntity } from './users/entities/user.entity'
+import { CategoryEntity } from './categories/entities/category.entity'
+import { GroupEntity } from './groups/entities/group.entity'
+import { postgresSettings } from './settings'
+import { NodeEntity } from './nodes/entities/node.entity'
+import { AnswerEntity } from './nodes/entities/answer.entity'
+import { ResultEntity } from './results/entities/result.entity'
 
 @Module({
   imports: [
     SequelizeModule.forRoot({
-      dialect: settings.database.dialect,
-      host: settings.database.host,
-      port: settings.database.port,
-      username: settings.database.username,
-      password: settings.database.password,
-      database: settings.database.database,
-      logging: settings.database.logging,
-      autoLoadModels: true,
-      modelMatch: (filename: string) => filename.includes('.entity'),
-      synchronize: false,
-      dialectOptions: settings.database.dialectOptions
+      ...postgresSettings,
+      models: [UserEntity, CategoryEntity, GroupEntity, NodeEntity, AnswerEntity, ResultEntity],
+      autoLoadModels: true, // Automatically load models
+      synchronize: true // Auto-sync models with DB
     }),
     GamesModule,
     CategoriesModule,
     GroupsModule,
     AuthModule,
     UsersModule,
-    NodesModule
+    NodesModule,
+    ResultsModule
   ],
   controllers: [AppController],
-  providers: [AppService]
+  providers: [AppService, Seeder]
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

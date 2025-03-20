@@ -67,13 +67,12 @@ export class GroupsService {
     return this.mapEntityToPto(group)
   }
 
-  async update(id: string, updateGroupDto: Pto.Groups.UpdateGroup): Promise<Pto.Groups.Group> {
+  async update(id: string, updateGroupDto: Pto.Groups.UpdateGroup): Promise<void> {
     const group = await this.groupRepo.findByPk(id)
     if (!group) {
       throw new NotFoundException(Pto.Errors.Messages.GROUP_NOT_FOUND)
     }
     await group.update(updateGroupDto)
-    return this.mapEntityToPto(group)
   }
 
   async remove(id: string): Promise<void> {
@@ -82,5 +81,11 @@ export class GroupsService {
       throw new NotFoundException(Pto.Errors.Messages.GROUP_NOT_FOUND)
     }
     await group.destroy()
+  }
+
+  //seed
+  async findByName(name: string): Promise<Pto.Groups.Group | null> {
+    const group = await this.groupRepo.findOne({ where: { name } })
+    return group ? this.mapEntityToPto(group) : null
   }
 }

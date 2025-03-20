@@ -1,8 +1,8 @@
 import { Pto } from '@rtx/types'
-import { Transform, Type } from 'class-transformer'
+import { Type } from 'class-transformer'
 import { IsInt, IsOptional, IsString, Min } from 'class-validator'
 
-export class PaginationDto implements Pto.App.Pagination {
+export class PaginationSortedDto implements Pto.App.Pagination, Pto.App.Sorting {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -14,4 +14,12 @@ export class PaginationDto implements Pto.App.Pagination {
   @IsInt()
   @Min(1)
   size?: number
+
+  @IsOptional()
+  @IsString()
+  sortBy?: string
+
+  @IsOptional()
+  @IsString()
+  sortOrder?: 'ASC' | 'DESC'
 }

@@ -17,12 +17,6 @@ export class UsersController {
   }
 
   @AdminAuth()
-  @Get('members/:groupId')
-  async getGroupMembers(@Param('groupId') groupId: string) {
-    return this.usersService.getGroupMembers(groupId)
-  }
-
-  @AdminAuth()
   @Get('all')
   async getAllUsers(@Query() query: Pto.Users.UsersListQuery) {
     return this.usersService.getAll(query)
@@ -35,8 +29,7 @@ export class UsersController {
     @Body(ValidationPipe) changeUserRoleDto: Dto.Users.ChangeUserRole,
     @User() user: JwtUser
   ) {
-    console.log('user: ', user)
-    if (user.id == userId) throw new ForbiddenException()
+    if (user.id == userId) throw new ForbiddenException(Pto.Errors.Messages.YOU_CANNOT_UPATE_YOUR_OWN_ROLE)
     return this.usersService.changeUserRole(userId, changeUserRoleDto.role)
   }
 }

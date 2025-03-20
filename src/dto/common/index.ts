@@ -1,2 +1,2 @@
+export * from './pagination-sorted.dto'
 export * from './pagination.dto'
-export * from './sorting.dto'

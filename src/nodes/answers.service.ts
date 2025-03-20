@@ -1,12 +1,13 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { NodeEntity } from './entities/node.entity'
 import { Pto } from '@rtx/types'
 import { AnswerAttributes, AnswerEntity } from './entities/answer.entity'
 import { JwtUser } from 'src/auth/types/auth.jwtPayload'
-import { Op, WhereOptions } from 'sequelize'
+import { Op, Order, WhereOptions } from 'sequelize'
 import { GroupEntity } from 'src/groups/entities/group.entity'
 import { CategoryEntity } from 'src/categories/entities/category.entity'
+import { GamesService } from 'src/games/games.service'
 
 @Injectable()
 export class AnswersService {
@@ -49,8 +50,17 @@ export class AnswersService {
   }
 
   async getAllAnswers(query: Pto.Answers.AnswerListQuery): Promise<Pto.Answers.AnswersList> {
-    const { searchText, processed, correct, groupIds, updatedAt, page = 1, size = 10 } = query
-    console.log('groupIds: ', groupIds)
+    const {
+      searchText,
+      processed,
+      correct,
+      groupIds,
+      updatedAt,
+      page = 1,
+      size = 10,
+      sortBy = 'updatedAt',
+      sortOrder = 'DESC'
+    } = query
 
     const where: WhereOptions<AnswerAttributes> = {}
 
@@ -76,7 +86,6 @@ export class AnswersService {
       where,
       offset: (page - 1) * size,
       limit: size,
-      order: [['updatedAt', 'DESC']],
       include: [
         NodeEntity,
         {
@@ -135,7 +144,7 @@ export class AnswersService {
     })
 
     if (answers.length !== evaluateAnswers.length) {
-      throw new NotFoundException('Деякі відповіді не знайдено.')
+      throw new NotFoundException(Pto.Errors.Messages.ANSWER_NOT_FOUND)
     }
 
     const updatePromises = evaluateAnswers.map(({ answerId, correct }) => {

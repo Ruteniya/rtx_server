@@ -62,4 +62,10 @@ export class CategoriesService {
     }
     return category.destroy()
   }
+
+  //seed
+  async findByName(name: string): Promise<Pto.Categories.Category | null> {
+    const category = await this.categoryRepo.findOne({ where: { name } })
+    return category ? this.mapEntityToPto(category) : null
+  }
 }

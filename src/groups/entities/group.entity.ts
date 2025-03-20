@@ -10,6 +10,7 @@ import {
   HasMany
 } from 'sequelize-typescript'
 import { CategoryEntity } from 'src/categories/entities/category.entity'
+import { ResultEntity } from 'src/results/entities/result.entity'
 import { UserEntity } from 'src/users/entities/user.entity'
 
 export interface GroupAttributes {
@@ -47,4 +48,7 @@ export class GroupEntity extends Model<GroupAttributes, CreationAttributes> {
 
   @HasMany(() => UserEntity)
   declare users: UserEntity[]
+
+  @HasMany(() => ResultEntity)
+  declare results: ResultEntity[]
 }

@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common'
 import { GamesService } from './games.service'
-import { GamesController } from './games.controller'
 import { SequelizeModule } from '@nestjs/sequelize'
 import { GameEntity } from './entities/game.entity'
+import { GamesController } from './games.controller'
 
 @Module({
   imports: [SequelizeModule.forFeature([GameEntity])],
   providers: [GamesService],
-  controllers: [GamesController]
+  controllers: [GamesController],
+  exports: [GamesService]
 })
 export class GamesModule {}

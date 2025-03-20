@@ -8,18 +8,13 @@ import { AdminAuth, SystemAuth } from 'src/decorators'
 export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}
 
-  @SystemAuth()
-  @Post()
-  async create(@Body() createGroupDto: Dto.Groups.CreateGroupDto) {
-    return this.groupsService.create(createGroupDto)
-  }
-
   @AdminAuth()
   @Get()
   async findAll(): Promise<Pto.Groups.GroupList> {
     return this.groupsService.findAll()
   }
 
+  @AdminAuth()
   @Get('/populated/:id')
   async findPopulatedOne(@Param('id') id: string) {
     return this.groupsService.findPopulatedOne(id)
@@ -28,6 +23,12 @@ export class GroupsController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.groupsService.findOne(id)
+  }
+
+  @SystemAuth()
+  @Post()
+  async create(@Body() createGroupDto: Dto.Groups.CreateGroupDto) {
+    return this.groupsService.create(createGroupDto)
   }
 
   @SystemAuth()

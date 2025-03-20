@@ -9,6 +9,7 @@ import { UserEntity } from 'src/users/entities/user.entity'
 @Module({
   imports: [SequelizeModule.forFeature([GroupEntity, CategoryEntity, UserEntity])],
   controllers: [GroupsController],
-  providers: [GroupsService]
+  providers: [GroupsService],
+  exports: [GroupsService]
 })
 export class GroupsModule {}

@@ -32,7 +32,6 @@ export class AuthController {
     if (groupId) {
       redirectUrl.searchParams.append('groupId', groupId)
     }
-    console.log('redirectUrl: ', redirectUrl)
 
     return res.redirect(redirectUrl.toString())
   }

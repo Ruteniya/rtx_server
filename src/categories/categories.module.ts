@@ -8,6 +8,7 @@ import { GroupEntity } from 'src/groups/entities/group.entity'
 @Module({
   imports: [SequelizeModule.forFeature([CategoryEntity, GroupEntity])],
   controllers: [CategoriesController],
-  providers: [CategoriesService]
+  providers: [CategoriesService],
+  exports: [CategoriesService]
 })
 export class CategoriesModule {}
