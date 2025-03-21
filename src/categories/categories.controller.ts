@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common'
 import { CategoriesService } from './categories.service'
 import { Dto } from 'src/dto'
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 import { Auth, SystemAuth } from 'src/decorators'
 
 @Controller('categories')

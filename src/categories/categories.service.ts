@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { CategoryEntity } from './entities/category.entity'
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 
 @Injectable()
 export class CategoriesService {

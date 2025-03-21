@@ -1,4 +1,4 @@
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 import { Table, Column, Model, PrimaryKey, Default, DataType, BelongsTo, ForeignKey } from 'sequelize-typescript'
 import { GroupEntity } from 'src/groups/entities/group.entity'
 

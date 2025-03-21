@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { NodeEntity } from './entities/node.entity'
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 import { AnswerEntity } from './entities/answer.entity'
 
 @Injectable()

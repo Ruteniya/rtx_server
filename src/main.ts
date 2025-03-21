@@ -7,6 +7,7 @@ import { settings } from './settings'
 import { AppModule } from './app.module'
 import { CustomParseUUIDPipe } from './pipes/custom-parse-uuid.pipe'
 import * as cookieParser from 'cookie-parser'
+import * as path from 'path'
 
 async function bootstrap() {
   const logger = new CustomLogger(settings.appName)
@@ -38,6 +39,8 @@ async function bootstrap() {
 }
 
 export const configure = async (app: NestExpressApplication, logger: CustomLogger): Promise<void> => {
+  app.useStaticAssets(path.join(__dirname, settings.frontendFiles))
+
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }))
   app.useBodyParser('json', { limit: settings.apiBodySize })
   app.useBodyParser('urlencoded', { limit: settings.apiBodySize, extended: true })

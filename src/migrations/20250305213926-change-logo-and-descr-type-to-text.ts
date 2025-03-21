@@ -2,7 +2,7 @@ import { QueryInterface, DataTypes } from 'sequelize'
 
 export const up = async (queryInterface: QueryInterface) => {
   await queryInterface.changeColumn('Games', 'logo', {
-    type: DataTypes.TEXT,
+    type: DataTypes.TEXT('long'),
     allowNull: true
   })
   await queryInterface.changeColumn('Games', 'description', {

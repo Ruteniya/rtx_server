@@ -1,6 +1,6 @@
 import { Injectable, ArgumentMetadata, BadRequestException } from '@nestjs/common'
 import { ParseUUIDPipe } from '@nestjs/common'
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 
 @Injectable()
 export class CustomParseUUIDPipe extends ParseUUIDPipe {

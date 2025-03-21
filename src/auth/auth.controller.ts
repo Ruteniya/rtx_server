@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Param, UseGuards, Req, Res, Query } from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard'
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 import { Response } from 'express'
 import { UsersService } from 'src/users/users.service'
 import { settings } from 'src/settings'

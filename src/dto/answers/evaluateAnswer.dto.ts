@@ -1,4 +1,4 @@
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 import { IsBoolean, IsNotEmpty, IsUUID } from 'class-validator'
 
 export class EvaluateAnswerDto implements Pto.Answers.EvaluateAnswer {

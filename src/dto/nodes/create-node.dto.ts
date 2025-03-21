@@ -1,4 +1,4 @@
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 import { IsString, IsOptional, MaxLength, IsInt, Min, IsEnum } from 'class-validator'
 
 export class CreateNodeDto implements Pto.Nodes.CreateNode {

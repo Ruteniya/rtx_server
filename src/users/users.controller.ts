@@ -4,7 +4,7 @@ import { AdminAuth, JwtAuth, SystemAuth } from 'src/decorators'
 import { User } from 'src/decorators/user.decorator'
 import { Dto } from 'src/dto'
 import { JwtUser } from 'src/auth/types/auth.jwtPayload'
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 
 @Controller('users')
 export class UsersController {

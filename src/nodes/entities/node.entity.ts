@@ -1,4 +1,4 @@
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 import { Table, Column, Model, PrimaryKey, Default, DataType, Unique, HasMany } from 'sequelize-typescript'
 import { AnswerEntity } from './answer.entity'
 

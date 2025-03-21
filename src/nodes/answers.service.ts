@@ -1,10 +1,10 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { NodeEntity } from './entities/node.entity'
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 import { AnswerAttributes, AnswerEntity } from './entities/answer.entity'
 import { JwtUser } from 'src/auth/types/auth.jwtPayload'
-import { Op, Order, WhereOptions } from 'sequelize'
+import { Op, Order, Sequelize, WhereOptions } from 'sequelize'
 import { GroupEntity } from 'src/groups/entities/group.entity'
 import { CategoryEntity } from 'src/categories/entities/category.entity'
 import { GamesService } from 'src/games/games.service'
@@ -65,13 +65,23 @@ export class AnswersService {
     const where: WhereOptions<AnswerAttributes> = {}
 
     if (searchText) {
+      // for postgres
+      // where[Op.or] = [
+      //   { answerValue: { [Op.iLike]: `%${searchText}%` } }, // Case-insensitive search
+      //   { userComment: { [Op.iLike]: `%${searchText}%` } }, // Case-insensitive search
+      //   { '$node.name$': { [Op.iLike]: `%${searchText}%` } }, // Assuming 'node' is a relation and you use Sequelize's associations
+      //   { '$node.question$': { [Op.iLike]: `%${searchText}%` } }, // Case-insensitive search
+      //   { '$node.correctAnswer$': { [Op.iLike]: `%${searchText}%` } }, // Case-insensitive search
+      //   { '$node.adminDescription$': { [Op.iLike]: `%${searchText}%` } } // Case-insensitive search
+      // ]
+
       where[Op.or] = [
-        { answerValue: { [Op.iLike]: `%${searchText}%` } }, // Case-insensitive search
-        { userComment: { [Op.iLike]: `%${searchText}%` } }, // Case-insensitive search
-        { '$node.name$': { [Op.iLike]: `%${searchText}%` } }, // Assuming 'node' is a relation and you use Sequelize's associations
-        { '$node.question$': { [Op.iLike]: `%${searchText}%` } }, // Case-insensitive search
-        { '$node.correctAnswer$': { [Op.iLike]: `%${searchText}%` } }, // Case-insensitive search
-        { '$node.adminDescription$': { [Op.iLike]: `%${searchText}%` } } // Case-insensitive search
+        Sequelize.literal(`LOWER(answerValue) LIKE LOWER('%${searchText}%')`),
+        Sequelize.literal(`LOWER(userComment) LIKE LOWER('%${searchText}%')`),
+        Sequelize.literal(`LOWER(node.name) LIKE LOWER('%${searchText}%')`),
+        Sequelize.literal(`LOWER(node.question) LIKE LOWER('%${searchText}%')`),
+        Sequelize.literal(`LOWER(node.correctAnswer) LIKE LOWER('%${searchText}%')`),
+        Sequelize.literal(`LOWER(node.adminDescription) LIKE LOWER('%${searchText}%')`)
       ]
     }
 
@@ -85,7 +95,7 @@ export class AnswersService {
       col: 'id',
       where,
       offset: (page - 1) * size,
-      limit: size,
+      limit: Number(size),
       include: [
         NodeEntity,
         {

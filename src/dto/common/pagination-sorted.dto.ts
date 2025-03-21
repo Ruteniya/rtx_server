@@ -1,4 +1,4 @@
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 import { Type } from 'class-transformer'
 import { IsInt, IsOptional, IsString, Min } from 'class-validator'
 

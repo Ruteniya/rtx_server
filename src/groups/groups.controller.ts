@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, BadRequestException } from '@nestjs/common'
 import { GroupsService } from './groups.service'
 import { Dto } from 'src/dto'
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 import { AdminAuth, SystemAuth } from 'src/decorators'
 
 @Controller('groups')

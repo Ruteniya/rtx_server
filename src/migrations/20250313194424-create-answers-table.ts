@@ -39,7 +39,7 @@ export const up = async (queryInterface: QueryInterface) => {
       onDelete: 'CASCADE'
     },
     answerValue: {
-      type: DataTypes.TEXT,
+      type: DataTypes.TEXT('long'),
       allowNull: false
     },
     userComment: {

@@ -1,4 +1,4 @@
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 import { IsNotEmpty, IsString, IsInt, Min, MaxLength, IsUUID } from 'class-validator'
 
 export class CreateGroupDto implements Pto.Groups.CreateGroup {

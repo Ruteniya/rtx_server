@@ -1,6 +1,6 @@
 import { Transform, Type } from 'class-transformer'
 import { IsBoolean, IsOptional, IsUUID, IsArray, ArrayNotEmpty, IsDate, IsString } from 'class-validator'
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 import { PaginationDto } from '../common'
 
 export class AnswerListQuery extends PaginationDto implements Pto.Answers.AnswerListQuery {

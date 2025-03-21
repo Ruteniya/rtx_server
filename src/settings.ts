@@ -14,26 +14,15 @@ const env = {
   isTest: stage === 'test'
 }
 
-const dialectOptions = !env.isDevelopment
-  ? {
-      dialectOptions: {
-        ssl: {
-          require: true,
-          rejectUnauthorized: false
-        }
-      }
-    }
-  : {}
-
 export const postgresSettings = {
-  port: parseInt(process.env.DATABASE_PORT || '5432'),
-  database: process.env.POSTGRES_DB || 'rtx',
-  username: process.env.DATABASE_USER || 'postgres',
+  port: parseInt(process.env.DATABASE_PORT || '3306'),
+  database: process.env.DATABASE_NAME || 'rtx',
+  username: process.env.DATABASE_USER || 'rtx',
   password: process.env.DATABASE_PASSWORD || 'password',
   host: process.env.DATABASE_HOST || 'localhost',
-  dialect: 'postgres' as Dialect,
-  logging: env.isDevelopment ? console.log : false,
-  ...dialectOptions
+  dialect: 'mariadb' as Dialect,
+  logging: console.log,
+  ssl: false
 }
 
 export const settings = {
@@ -46,7 +35,8 @@ export const settings = {
   },
   database: postgresSettings,
   apiBodySize: 52428800,
-  frontendLink: process.env.FRONTEND_LINK || 'http://localhost:5173',
+  frontendFiles: process.env.PATH_TO_FRONTEND_FILES || '../../../rtx_client/dist',
+  frontendLink: process.env.FRONTEND_LINK || 'http://localhost:4496',
   backendLink: process.env.BACKEND_LINK || 'http://localhost:4496',
   assets: {},
   googleOAuth: {

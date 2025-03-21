@@ -32,7 +32,7 @@ export class GameEntity extends Model<GameAttributes, CreationAttributes> {
   @Column({ type: DataType.TEXT, allowNull: true })
   declare description?: string
 
-  @Column({ allowNull: true })
+  @Column({ type: DataType.TEXT('long'), allowNull: true })
   declare logo?: string
 
   @Column({ type: DataType.DATE, allowNull: false })

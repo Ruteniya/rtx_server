@@ -22,7 +22,7 @@ export const up = async (queryInterface: QueryInterface) => {
       allowNull: false
     },
     questionImage: {
-      type: DataTypes.TEXT,
+      type: DataTypes.TEXT('long'),
       allowNull: true
     },
     adminDescription: {
@@ -30,7 +30,7 @@ export const up = async (queryInterface: QueryInterface) => {
       allowNull: true
     },
     correctAnswer: {
-      type: DataTypes.TEXT,
+      type: DataTypes.TEXT('long'),
       allowNull: true
     },
     points: {

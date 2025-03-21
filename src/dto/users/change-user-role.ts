@@ -1,4 +1,4 @@
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 import { IsNotEmpty, IsString, MaxLength, IsEmail, IsOptional } from 'class-validator'
 
 export class ChangeUserRole implements Pto.Users.ChangeUserRole {

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { GroupEntity } from './entities/group.entity'
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 import { CategoryEntity } from 'src/categories/entities/category.entity'
 import { UserEntity } from 'src/users/entities/user.entity'
 

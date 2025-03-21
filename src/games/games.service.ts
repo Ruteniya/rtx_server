@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { GameEntity } from './entities/game.entity'
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 
 @Injectable()
 export class GamesService {

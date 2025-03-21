@@ -1,4 +1,4 @@
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 import { IsNotEmpty, IsString, MaxLength, IsOptional, IsUUID } from 'class-validator'
 
 export class AddAnswerDto implements Pto.Answers.AddAnswer {

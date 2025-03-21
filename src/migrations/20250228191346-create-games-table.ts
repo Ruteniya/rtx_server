@@ -1,4 +1,4 @@
-import { QueryInterface, DataTypes } from 'sequelize';
+import { QueryInterface, DataTypes } from 'sequelize'
 
 export const up = async (queryInterface: QueryInterface) => {
   await queryInterface.createTable('Games', {
@@ -6,41 +6,41 @@ export const up = async (queryInterface: QueryInterface) => {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
-      allowNull: false,
+      allowNull: false
     },
     name: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: false
     },
     description: {
       type: DataTypes.TEXT,
-      allowNull: true,
+      allowNull: true
     },
     logo: {
-      type: DataTypes.STRING,
-      allowNull: true,
+      type: DataTypes.TEXT('long'),
+      allowNull: true
     },
     startDate: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: false
     },
     endDate: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: false
     },
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: DataTypes.NOW,
+      defaultValue: DataTypes.NOW
     },
     updatedAt: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
-  });
-};
+      defaultValue: DataTypes.NOW
+    }
+  })
+}
 
 export const down = async (queryInterface: QueryInterface) => {
-  await queryInterface.dropTable('Games');
-};
+  await queryInterface.dropTable('Games')
+}

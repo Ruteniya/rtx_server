@@ -1,4 +1,4 @@
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 import { IsNotEmpty, IsString, IsInt, Min, MaxLength, IsOptional } from 'class-validator'
 
 export class UpdateGroupDto implements Pto.Groups.UpdateGroup {

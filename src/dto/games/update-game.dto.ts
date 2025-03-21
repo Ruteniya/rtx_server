@@ -1,4 +1,4 @@
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 import { IsString, MaxLength, IsOptional, IsDateString } from 'class-validator'
 
 export class UpdateGameDto implements Pto.Games.UpdateGame {

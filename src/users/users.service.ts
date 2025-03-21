@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
-import { Pto } from '@rtx/types'
+import { Pto } from 'rtxtypes'
 import { UserAttributes, UserEntity } from './entities/user.entity'
 import { InjectModel } from '@nestjs/sequelize'
 import { GroupEntity } from 'src/groups/entities/group.entity'
-import { Op, WhereOptions } from 'sequelize'
+import { Op, Sequelize, WhereOptions } from 'sequelize'
 import { first } from 'rxjs'
 import { CategoryEntity } from 'src/categories/entities/category.entity'
 
@@ -53,7 +53,7 @@ export class UsersService {
             required: true
           }
         ],
-        required: true
+        required: false
       }
     })
     if (!user) {
@@ -104,19 +104,23 @@ export class UsersService {
     const { searchText, page = 1, size = 10 } = query
     const where: WhereOptions<UserAttributes> = {}
     if (searchText) {
+      const lowerSearch = searchText.toLowerCase()
+
       where[Op.or] = [
-        { email: { [Op.iLike]: `%${searchText}%` } },
-        { firstName: { [Op.iLike]: `%${searchText}%` } },
-        { lastName: { [Op.iLike]: `%${searchText}%` } },
-        { '$group.name$': { [Op.iLike]: `%${searchText}%` } }
+        Sequelize.literal(`LOWER(email) LIKE LOWER('%${lowerSearch}%')`),
+        Sequelize.literal(`LOWER(firstName) LIKE LOWER('%${lowerSearch}%')`),
+        Sequelize.literal(`LOWER(lastName) LIKE LOWER('%${lowerSearch}%')`),
+        Sequelize.literal(`LOWER(\`group\`.name) LIKE LOWER('%${lowerSearch}%')`)
       ]
     }
+
+    console.log('size: ', size, typeof size)
     const result = await this.userRepo.findAndCountAll({
       distinct: true,
       col: 'id',
       where,
       offset: (page - 1) * size,
-      limit: size,
+      limit: Number(size),
       order: [['updatedAt', 'DESC']],
       include: [GroupEntity]
     })
