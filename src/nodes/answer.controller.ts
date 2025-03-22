@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, ValidationPipe, Query, Patch, UsePipes } from '@nestjs/common'
+import { Controller, Get, Post, Body, ValidationPipe, Query, Patch, UsePipes, Res, Param } from '@nestjs/common'
 import { Dto } from 'src/dto'
 import { AdminAuth, Auth, User } from 'src/decorators'
 import { JwtUser } from 'src/auth/types/auth.jwtPayload'
 import { AnswersService } from './answers.service'
 import { GamesService } from 'src/games/games.service'
+import { Response } from 'express'
 
 @Controller('answers')
 export class AnswerController {
@@ -15,8 +16,25 @@ export class AnswerController {
   @Auth()
   @Get()
   async getAnswers(@User() user: JwtUser) {
-    await this.gamesService.checkGameTime()
+    await this.gamesService.checkGameTime(false)
     return this.answerService.getAnswers(user.groupId)
+  }
+
+  @Auth()
+  @Get('/small')
+  async getAnswersSmallVersion(@Res() res: Response, @User() user) {
+    await this.gamesService.checkGameTime(false)
+
+    const answers = await this.answerService.getAnswersSmall(user.groupId)
+    return res.json(answers)
+  }
+
+  @Auth()
+  @Get('/full/:id')
+  async getAnswer(@Param('id') answerId, @User() user) {
+    await this.gamesService.checkGameTime(false)
+
+    return this.answerService.getAnswer(answerId, user.groupId)
   }
 
   @AdminAuth()

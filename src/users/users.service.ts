@@ -114,7 +114,6 @@ export class UsersService {
       ]
     }
 
-    console.log('size: ', size, typeof size)
     const result = await this.userRepo.findAndCountAll({
       distinct: true,
       col: 'id',

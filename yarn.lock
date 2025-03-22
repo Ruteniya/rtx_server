@@ -6301,9 +6301,9 @@ router@^2.0.0:
     path-to-regexp "^8.0.0"
 
 rtxtypes@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.npmjs.org/rtxtypes/-/rtxtypes-1.0.2.tgz#a7a62d4f2e15a57b3459d5da74dcccf6744d6a4a"
-  integrity sha512-DoTUNeAYTh6O6Eg1N9CzGto/2im/ZRTeaM10ZwiO5iz/jFwOFVLJom7dbzJCU8Rw32gYNUpIjzUp1lhr/12MVA==
+  version "1.0.5"
+  resolved "https://registry.npmjs.org/rtxtypes/-/rtxtypes-1.0.5.tgz#8b3b5609d992be3267da47281cd06e9329a2c33a"
+  integrity sha512-s+HMnYWHJxRud3w36c8u2Vj71E7P52FVucQRg6LBs37ogMIgi+UfIJUlB7I+BvPucB8zimiVO0xCreSABrUv+w==
 
 run-parallel@^1.1.9:
   version "1.2.0"

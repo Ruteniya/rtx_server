@@ -39,6 +39,36 @@ export class NodesService {
       comment: node.comment
     }
   }
+  private mapNodeToSmallPto(node: NodeEntity): Pto.Nodes.NodeSmall {
+    return {
+      id: node.id,
+      name: node.name,
+      answerType: node.answerType,
+      question: node.question,
+      points: node.points
+    }
+  }
+
+  private sortByNaturalOrder<T>(items: T[], key: keyof T): T[] {
+    return items.sort((a, b) => {
+      const aValue = String(a[key])
+      const bValue = String(b[key])
+
+      const aNum = Number(aValue)
+      const bNum = Number(bValue)
+
+      const aIsNum = !isNaN(aNum)
+      const bIsNum = !isNaN(bNum)
+
+      if (aIsNum && bIsNum) {
+        return aNum - bNum // Обидва числа → сортуємо як числа
+      } else if (!aIsNum && !bIsNum) {
+        return aValue.localeCompare(bValue, undefined, { numeric: true }) // Обидва рядки → сортуємо як текст
+      } else {
+        return aIsNum ? -1 : 1 // Число перед рядком
+      }
+    })
+  }
 
   async createNode(createNodeDto: Pto.Nodes.CreateNode): Promise<Pto.Nodes.Node> {
     const existingNode = await this.nodeRepo.findOne({ where: { name: createNodeDto.name } })
@@ -49,6 +79,16 @@ export class NodesService {
     return this.mapNodeToPto(node)
   }
 
+  async findAllNodesSmall(): Promise<Pto.Nodes.NodeSmallList> {
+    const nodes = await this.nodeRepo.findAll({
+      attributes: ['id', 'name', 'answerType', 'question', 'points'],
+      order: [['name', 'ASC']]
+    })
+    const sortedNodes = this.sortByNaturalOrder(nodes, 'name')
+
+    return { items: sortedNodes.map(this.mapNodeToSmallPto), total: nodes.length }
+  }
+
   async findAllNodesShort(): Promise<Pto.Nodes.ShortNodeList> {
     const nodes = await this.nodeRepo.findAll({ order: [['name', 'ASC']] })
     return { items: nodes.map(this.mapNodeToShortPto), total: nodes.length }
@@ -56,7 +96,17 @@ export class NodesService {
 
   async findAllNodes(): Promise<Pto.Nodes.NodeList> {
     const nodes = await this.nodeRepo.findAll({ order: [['name', 'ASC']] })
-    return { items: nodes.map(this.mapNodeToPto), total: nodes.length }
+    const sortedNodes = this.sortByNaturalOrder(nodes, 'name')
+
+    return { items: sortedNodes.map(this.mapNodeToPto), total: nodes.length }
+  }
+
+  async findShortNode(id: string): Promise<Pto.Nodes.ShortNode> {
+    const node = await this.nodeRepo.findByPk(id)
+    if (!node) {
+      throw new NotFoundException(Pto.Errors.Messages.NODE_NOT_FOUND)
+    }
+    return this.mapNodeToShortPto(node)
   }
 
   async findNode(id: string): Promise<Pto.Nodes.Node> {

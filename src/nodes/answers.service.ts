@@ -12,9 +12,6 @@ import { GamesService } from 'src/games/games.service'
 @Injectable()
 export class AnswersService {
   constructor(
-    @InjectModel(NodeEntity)
-    private readonly nodeRepo: typeof NodeEntity,
-
     @InjectModel(AnswerEntity)
     private readonly answerRepo: typeof AnswerEntity
   ) {}
@@ -34,6 +31,17 @@ export class AnswersService {
     }
   }
 
+  private mapAnswerToSmallPto(answer: AnswerEntity): Pto.Answers.AnswerSmall {
+    return {
+      id: answer.id,
+      userId: answer.userId,
+      groupId: answer.groupId,
+      nodeId: answer.nodeId,
+      processed: answer.processed,
+      correct: answer.correct
+    }
+  }
+
   private mapAnswerToPopulatedPto(answer: AnswerEntity): Pto.Answers.PopulatedAnswer {
     const answerPto = this.mapAnswerToPto(answer)
     return {
@@ -47,6 +55,15 @@ export class AnswersService {
     const answers = await this.answerRepo.findAll({ where: { groupId } })
 
     return answers.map(this.mapAnswerToPto)
+  }
+
+  async getAnswersSmall(groupId): Promise<Pto.Answers.AnswersSmallList> {
+    const answers = await this.answerRepo.findAll({
+      where: { groupId },
+      attributes: ['id', 'userId', 'groupId', 'nodeId', 'processed', 'correct'] // Вибираємо лише потрібні атрибути
+    })
+
+    return { total: answers.length, items: answers.map(this.mapAnswerToSmallPto) }
   }
 
   async getAllAnswers(query: Pto.Answers.AnswerListQuery): Promise<Pto.Answers.AnswersList> {
@@ -114,16 +131,25 @@ export class AnswersService {
     return { total: result.count, items: result.rows?.map((answer) => this.mapAnswerToPopulatedPto(answer)) }
   }
 
+  async getAnswer(id: string, groupId: string) {
+    const answer = await this.answerRepo.findOne({ where: { id, groupId } })
+
+    if (!answer) throw new NotFoundException(Pto.Errors.Messages.ANSWER_NOT_FOUND)
+
+    return this.mapAnswerToPto(answer)
+  }
+
   async giveAnswer(addAnswer: Pto.Answers.AddAnswer, user: JwtUser) {
     const { id: userId, groupId } = user
     const { nodeId, answerValue, userComment } = addAnswer
     if (!groupId) throw new NotFoundException(Pto.Errors.Messages.GROUP_NOT_FOUND)
     const existingAnswer = await this.answerRepo.findOne({ where: { groupId, nodeId } })
 
+    let finalAnswer
     if (existingAnswer) {
       if (existingAnswer.correct) throw new ForbiddenException(Pto.Errors.Messages.ANSWER_ALREADY_EXISTS)
       /// update and set processed and correct to false
-      await existingAnswer.update({
+      finalAnswer = await existingAnswer.update({
         answerValue,
         userComment,
         processed: false,
@@ -131,7 +157,7 @@ export class AnswersService {
       })
     } else {
       //create
-      await this.answerRepo.create({
+      finalAnswer = await this.answerRepo.create({
         userId,
         groupId,
         nodeId,
@@ -141,6 +167,7 @@ export class AnswersService {
         correct: false
       })
     }
+    return this.mapAnswerToSmallPto(finalAnswer)
   }
 
   async evaluateAnswers(evaluateAnswers: Pto.Answers.EvaluateAnswer[]) {
