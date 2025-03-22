@@ -1,9 +1,10 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common'
 import { NodesService } from './nodes.service'
 import { Dto } from 'src/dto'
-import { AdminAuth, Auth, SystemAuth } from 'src/decorators'
+import { AdminAuth, Auth, SystemAuth, User } from 'src/decorators'
 import { GamesService } from 'src/games/games.service'
 import { Response } from 'express'
+import { Pto } from 'rtxtypes'
 
 @Controller('nodes')
 export class NodesController {
@@ -20,8 +21,8 @@ export class NodesController {
 
   @Auth()
   @Get('small')
-  async findAllSmallVersion(@Res() res: Response) {
-    await this.gamesService.checkGameTime(false)
+  async findAllSmallVersion(@Res() res: Response, @User() user) {
+    if (user.role == Pto.Users.UserRole.User) await this.gamesService.checkGameTime(false)
 
     const nodes = await this.nodesService.findAllNodesSmall()
     return res.json(nodes)
@@ -29,8 +30,8 @@ export class NodesController {
 
   @Auth()
   @Get('short')
-  async findAllShortVersion() {
-    await this.gamesService.checkGameTime()
+  async findAllShortVersion(@User() user) {
+    if (user.role == Pto.Users.UserRole.User) await this.gamesService.checkGameTime()
 
     return this.nodesService.findAllNodesShort()
   }
@@ -43,8 +44,8 @@ export class NodesController {
 
   @Auth()
   @Get('short/:id')
-  async findShortOne(@Param('id') id: string) {
-    await this.gamesService.checkGameTime(false)
+  async findShortOne(@Param('id') id: string, @User() user) {
+    if (user.role == Pto.Users.UserRole.User) await this.gamesService.checkGameTime(false)
 
     return this.nodesService.findShortNode(id)
   }
