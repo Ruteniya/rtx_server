@@ -20,7 +20,7 @@ export const postgresSettings = {
   username: process.env.DATABASE_USER || 'rtx',
   password: process.env.DATABASE_PASSWORD || 'password',
   host: process.env.DATABASE_HOST || 'localhost',
-  dialect: 'mariadb' as Dialect,
+  dialect: 'mariadb' as Dialect, // 'mariadb' or 'postgres' as Dialect
   logging: console.log,
   ssl: false
 }
