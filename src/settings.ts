@@ -17,7 +17,13 @@ const env = {
 export const postgresSettings = env.isProduction
   ? {
       uri: process.env.DATABASE_URL,
-      dialect: 'postgres' as Dialect
+      dialect: 'postgres' as Dialect,
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false
+        }
+      }
     }
   : {
       port: parseInt(process.env.DATABASE_PORT || '3306'),
