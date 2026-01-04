@@ -60,8 +60,10 @@ export class AuthController {
   private setTokenToCookie(res: Response, accessToken: string) {
     res.cookie('access_token', accessToken, {
       httpOnly: true,
-      secure: settings.env.isProduction,
-      maxAge: settings.jwt.cookieExpiresIn
+      secure: true,
+      sameSite: 'none',
+      maxAge: settings.jwt.cookieExpiresIn,
+      partitioned: true
     })
   }
 }

@@ -39,7 +39,7 @@ async function bootstrap() {
 }
 
 export const configure = async (app: NestExpressApplication, logger: CustomLogger): Promise<void> => {
-  app.useStaticAssets(path.join(__dirname, settings.frontendFiles))
+  // app.useStaticAssets(path.join(__dirname, settings.frontendFiles))
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }))
   app.useBodyParser('json', { limit: settings.apiBodySize })

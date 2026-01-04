@@ -14,19 +14,19 @@ import { SequelizeModule } from '@nestjs/sequelize'
 import { UserEntity } from './users/entities/user.entity'
 import { CategoryEntity } from './categories/entities/category.entity'
 import { GroupEntity } from './groups/entities/group.entity'
-import { postgresSettings, settings } from './settings'
+import { postgresSettings } from './settings'
 import { NodeEntity } from './nodes/entities/node.entity'
 import { AnswerEntity } from './nodes/entities/answer.entity'
 import { ResultEntity } from './results/entities/result.entity'
-import { ServeStaticModule } from '@nestjs/serve-static'
-import * as path from 'path'
+// import { ServeStaticModule } from '@nestjs/serve-static'
+// import * as path from 'path'
 
 @Module({
   imports: [
-    ServeStaticModule.forRoot({
-      rootPath: path.join(__dirname, settings.frontendFiles),
-      serveStaticOptions: { index: false }
-    }),
+    // ServeStaticModule.forRoot({
+    //   rootPath: path.join(__dirname, settings.frontendFiles),
+    //   serveStaticOptions: { index: false }
+    // }),
     SequelizeModule.forRoot({
       ...postgresSettings,
       models: [UserEntity, CategoryEntity, GroupEntity, NodeEntity, AnswerEntity, ResultEntity],
