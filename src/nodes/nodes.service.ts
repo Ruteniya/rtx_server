@@ -75,6 +75,10 @@ export class NodesService {
     if (existingNode) {
       throw new BadRequestException(Pto.Errors.Messages.NODE_ALREADY_EXISTS)
     }
+
+    //     if (createNodeDto.questionImage) {
+    // createNodeDto.smallImage =
+    //     }
     const node = await this.nodeRepo.create(createNodeDto)
     return this.mapNodeToPto(node)
   }

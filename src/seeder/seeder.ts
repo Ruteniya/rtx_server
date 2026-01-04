@@ -38,19 +38,19 @@ export class Seeder {
         this.logger.log('⚠️ Група "Адміністратори" вже існує, пропускаємо...')
       }
 
-      const existingAdmin = await this.usersService.findByEmail(
-        process.env.SYSTEM_ADMIN_EMAIL || 'ms.padalka@gmail.com'
-      )
-      if (!existingAdmin) {
-        await this.usersService.createSystemAdmin({
-          firstName: process.env.SYSTEM_ADMIN_NAME || 'System',
-          lastName: process.env.SYSTEM_ADMIN_SURNAME || 'Admin',
-          email: process.env.SYSTEM_ADMIN_EMAIL || 'ms.padalka@gmail.com',
-          groupId: adminGroup.id
-        })
-        this.logger.log('✅ System Admin створено')
-      } else {
-        this.logger.log('⚠️ System Admin вже існує, пропускаємо...')
+      if (process.env.SYSTEM_ADMIN_EMAIL) {
+        const existingAdmin = await this.usersService.findByEmail(process.env.SYSTEM_ADMIN_EMAIL)
+        if (!existingAdmin) {
+          await this.usersService.createSystemAdmin({
+            firstName: process.env.SYSTEM_ADMIN_NAME || 'System',
+            lastName: process.env.SYSTEM_ADMIN_SURNAME || 'Admin',
+            email: process.env.SYSTEM_ADMIN_EMAIL || 'ms.padalka@gmail.com',
+            groupId: adminGroup.id
+          })
+          this.logger.log('✅ System Admin створено')
+        } else {
+          this.logger.log('⚠️ System Admin вже існує, пропускаємо...')
+        }
       }
     } catch (error) {
       this.logger.error('❌ Помилка при створенні даних', error)
