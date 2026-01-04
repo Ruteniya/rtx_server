@@ -24,6 +24,7 @@ export const postgresSettings = {
   logging: console.log,
   ssl: false
 }
+console.log('postgresSettings:', postgresSettings)
 
 export const settings = {
   env,
