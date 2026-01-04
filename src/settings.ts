@@ -14,16 +14,21 @@ const env = {
   isTest: stage === 'test'
 }
 
-export const postgresSettings = {
-  port: parseInt(process.env.DATABASE_PORT || '3306'),
-  database: process.env.DATABASE_NAME || 'rtx',
-  username: process.env.DATABASE_USER || 'rtx',
-  password: process.env.DATABASE_PASSWORD || 'password',
-  host: process.env.DATABASE_HOST || 'localhost',
-  dialect: 'postgres' as Dialect, // 'mariadb' or 'postgres' as Dialect
-  logging: console.log,
-  ssl: false
-}
+export const postgresSettings = env.isProduction
+  ? {
+      uri: process.env.DATABASE_URL,
+      dialect: 'postgres' as Dialect
+    }
+  : {
+      port: parseInt(process.env.DATABASE_PORT || '3306'),
+      database: process.env.DATABASE_NAME || 'rtx',
+      username: process.env.DATABASE_USER || 'rtx',
+      password: process.env.DATABASE_PASSWORD || 'password',
+      host: process.env.DATABASE_HOST || 'localhost',
+      dialect: 'postgres' as Dialect, // 'mariadb' or 'postgres' as Dialect
+      logging: console.log,
+      ssl: false
+    }
 console.log('postgresSettings:', postgresSettings)
 
 export const settings = {
