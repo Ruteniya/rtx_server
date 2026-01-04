@@ -31,7 +31,7 @@ import * as path from 'path'
       ...postgresSettings,
       models: [UserEntity, CategoryEntity, GroupEntity, NodeEntity, AnswerEntity, ResultEntity],
       autoLoadModels: true, // Automatically load models
-      synchronize: true // Auto-sync models with DB
+      sync: { alter: true } // Auto-sync models with DB
     }),
     GamesModule,
     CategoriesModule,

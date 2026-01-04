@@ -31,7 +31,7 @@ export class AnswerEntity extends Model<AnswerAttributes, CreationAttributes> {
   declare id: string
 
   @ForeignKey(() => UserEntity)
-  @Column({ allowNull: false })
+  @Column({ type: DataType.UUID, allowNull: false })
   declare userId: string
 
   @ForeignKey(() => GroupEntity)
