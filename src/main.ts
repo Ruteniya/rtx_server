@@ -7,7 +7,6 @@ import { settings } from './settings'
 import { AppModule } from './app.module'
 import { CustomParseUUIDPipe } from './pipes/custom-parse-uuid.pipe'
 import * as cookieParser from 'cookie-parser'
-import * as path from 'path'
 
 async function bootstrap() {
   const logger = new CustomLogger(settings.appName)

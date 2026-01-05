@@ -62,8 +62,7 @@ export class AuthController {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      maxAge: settings.jwt.cookieExpiresIn,
-      partitioned: true
+      maxAge: settings.jwt.cookieExpiresIn
     })
   }
 }
