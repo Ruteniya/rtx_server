@@ -1,7 +1,9 @@
-import { Controller, Post, Body, Delete, Param, Get, Patch } from '@nestjs/common'
+import { Controller, Post, Body, Delete, Param, Get, Patch, UseInterceptors, UploadedFile } from '@nestjs/common'
 import { GamesService } from './games.service'
 import { Dto } from 'src/dto'
 import { SystemAuth } from 'src/decorators'
+import { FileInterceptor } from '@nestjs/platform-express'
+import { Multer } from 'multer'
 
 @Controller('games')
 export class GamesController {
@@ -9,14 +11,20 @@ export class GamesController {
 
   @SystemAuth()
   @Post()
-  async create(@Body() createGameDto: Dto.Games.CreateGameDto) {
-    return await this.gamesService.create(createGameDto)
+  @UseInterceptors(FileInterceptor('logo'))
+  async create(@UploadedFile() file: Multer.File, @Body() createGameDto: Dto.Games.CreateGameDto) {
+    return await this.gamesService.create(createGameDto, file)
   }
 
   @SystemAuth()
   @Patch(':id')
-  async update(@Body() updateGameDto: Dto.Games.UpdateGameDto, @Param('id') gameId: string) {
-    return await this.gamesService.update(gameId, updateGameDto)
+  @UseInterceptors(FileInterceptor('logo'))
+  async update(
+    @UploadedFile() file: Multer.File,
+    @Body() updateGameDto: Dto.Games.UpdateGameDto,
+    @Param('id') gameId: string
+  ) {
+    return await this.gamesService.update(gameId, updateGameDto, file)
   }
 
   @Get()

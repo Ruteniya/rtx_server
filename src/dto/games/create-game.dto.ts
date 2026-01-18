@@ -1,5 +1,5 @@
 import { Pto } from 'rtxtypes'
-import { IsString, IsDateString, IsOptional, MaxLength, IsUUID } from 'class-validator'
+import { IsString, IsDateString, IsOptional, MaxLength } from 'class-validator'
 
 export class CreateGameDto implements Pto.Games.CreateGame {
   @IsString()
@@ -10,10 +10,6 @@ export class CreateGameDto implements Pto.Games.CreateGame {
   @IsString()
   @MaxLength(500)
   description?: string
-
-  @IsOptional()
-  @IsString()
-  logo?: string
 
   @IsDateString()
   startDate: Date

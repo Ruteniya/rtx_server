@@ -35,7 +35,6 @@ export const postgresSettings = env.isProduction
       logging: console.log,
       ssl: false
     }
-console.log('postgresSettings:', postgresSettings)
 
 export const settings = {
   env,
@@ -60,6 +59,16 @@ export const settings = {
     accessSecret: process.env.JWT_SECRET || 'secret',
     accessExpiresIn: process.env.JWT_EXPIRE_IN,
     cookieExpiresIn: 7 * 24 * 60 * 60 * 1000 // 7 days in miliseconds
+  },
+  aws: {
+    s3: {
+      region: process.env.AWS_REGION,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!
+      },
+      s3BucketName: process.env.BUCKET_NAME
+    }
   }
 }
 

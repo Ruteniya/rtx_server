@@ -12,10 +12,6 @@ export class UpdateGameDto implements Pto.Games.UpdateGame {
   description?: string
 
   @IsOptional()
-  @IsString()
-  logo?: string
-
-  @IsOptional()
   @IsDateString()
   startDate: Date
 

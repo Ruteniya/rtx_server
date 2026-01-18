@@ -19,6 +19,7 @@ import { NodeEntity } from './nodes/entities/node.entity'
 import { AnswerEntity } from './nodes/entities/answer.entity'
 import { ResultEntity } from './results/entities/result.entity'
 // import { ServeStaticModule } from '@nestjs/serve-static'
+import { S3Module } from './s3/s3.module';
 // import * as path from 'path'
 
 @Module({
@@ -39,7 +40,8 @@ import { ResultEntity } from './results/entities/result.entity'
     AuthModule,
     UsersModule,
     NodesModule,
-    ResultsModule
+    ResultsModule,
+    S3Module
   ],
   controllers: [AppController],
   providers: [AppService, Seeder]
