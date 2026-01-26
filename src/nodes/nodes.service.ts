@@ -3,6 +3,11 @@ import { InjectModel } from '@nestjs/sequelize'
 import { NodeEntity } from './entities/node.entity'
 import { Pto } from 'rtxtypes'
 import { AnswerEntity } from './entities/answer.entity'
+import { S3Service } from 'src/s3/s3.service'
+import { Multer } from 'multer'
+import { Attributes, CreationAttributes } from 'sequelize'
+
+const NODES_DIRECTORY = 'nodes'
 
 @Injectable()
 export class NodesService {
@@ -11,18 +16,23 @@ export class NodesService {
     private readonly nodeRepo: typeof NodeEntity,
 
     @InjectModel(AnswerEntity)
-    private readonly answerRepo: typeof AnswerEntity
+    private readonly answerRepo: typeof AnswerEntity,
+
+    private readonly s3Service: S3Service
   ) {}
 
-  private mapNodeToPto(node: NodeEntity): Pto.Nodes.Node {
+  private async mapNodeToPto(node: NodeEntity): Promise<Pto.Nodes.Node> {
     return {
       id: node.id,
       name: node.name,
       answerType: node.answerType,
       question: node.question,
-      questionImage: node.questionImage,
+      questionImage: node.questionImage ? await this.s3Service.getSignedUrl(node.questionImage) : '',
       adminDescription: node.adminDescription,
-      correctAnswer: node.correctAnswer,
+      correctAnswer:
+        node.answerType === Pto.Nodes.AnswerType.Photo && node.correctAnswer
+          ? await this.s3Service.getSignedUrl(node.correctAnswer)
+          : node.correctAnswer,
       points: node.points,
       comment: node.comment
     }
@@ -61,26 +71,36 @@ export class NodesService {
       const bIsNum = !isNaN(bNum)
 
       if (aIsNum && bIsNum) {
-        return aNum - bNum // Обидва числа → сортуємо як числа
+        return aNum - bNum
       } else if (!aIsNum && !bIsNum) {
-        return aValue.localeCompare(bValue, undefined, { numeric: true }) // Обидва рядки → сортуємо як текст
+        return aValue.localeCompare(bValue, undefined, { numeric: true })
       } else {
-        return aIsNum ? -1 : 1 // Число перед рядком
+        return aIsNum ? -1 : 1
       }
     })
   }
 
-  async createNode(createNodeDto: Pto.Nodes.CreateNode): Promise<Pto.Nodes.Node> {
+  async createNode(
+    createNodeDto: Pto.Nodes.CreateNode,
+    questionImageFile?: Multer.File,
+    correctAnswerFile?: Multer.File
+  ): Promise<Pto.Nodes.Node> {
     const existingNode = await this.nodeRepo.findOne({ where: { name: createNodeDto.name } })
+    const data: CreationAttributes<NodeEntity> = { ...createNodeDto }
     if (existingNode) {
       throw new BadRequestException(Pto.Errors.Messages.NODE_ALREADY_EXISTS)
     }
 
-    //     if (createNodeDto.questionImage) {
-    // createNodeDto.smallImage =
-    //     }
-    const node = await this.nodeRepo.create(createNodeDto)
-    return this.mapNodeToPto(node)
+    if (questionImageFile) {
+      data.questionImage = await this.s3Service.uploadFile(questionImageFile, NODES_DIRECTORY)
+    }
+
+    if (correctAnswerFile) {
+      data.correctAnswer = await this.s3Service.uploadFile(correctAnswerFile, NODES_DIRECTORY)
+    }
+
+    const node = await this.nodeRepo.create(data)
+    return await this.mapNodeToPto(node)
   }
 
   async findAllNodesSmall(): Promise<Pto.Nodes.NodeSmallList> {
@@ -100,9 +120,10 @@ export class NodesService {
 
   async findAllNodes(): Promise<Pto.Nodes.NodeList> {
     const nodes = await this.nodeRepo.findAll({ order: [['name', 'ASC']] })
-    const sortedNodes = this.sortByNaturalOrder(nodes, 'name')
 
-    return { items: sortedNodes.map(this.mapNodeToPto), total: nodes.length }
+    const sortedNodes = this.sortByNaturalOrder(nodes, 'name')
+    const items = await Promise.all(sortedNodes.map((node) => this.mapNodeToPto(node)))
+    return { items, total: nodes.length }
   }
 
   async findShortNode(id: string): Promise<Pto.Nodes.ShortNode> {
@@ -118,19 +139,46 @@ export class NodesService {
     if (!node) {
       throw new NotFoundException(Pto.Errors.Messages.NODE_NOT_FOUND)
     }
-    return this.mapNodeToPto(node)
+    return await this.mapNodeToPto(node)
   }
 
-  async updateNode(id: string, updateNodeDto: Pto.Nodes.UpdateNode): Promise<Pto.Nodes.Node> {
+  async updateNode(
+    id: string,
+    updateNodeDto: Pto.Nodes.UpdateNode,
+    questionImageFile: Multer.File | undefined,
+    correctAnswerFile: Multer.File | undefined,
+    options: Pto.Nodes.UpdateNodeOptions
+  ): Promise<Pto.Nodes.Node> {
     const node = await this.nodeRepo.findByPk(id)
-    if (!node) {
-      throw new NotFoundException(Pto.Errors.Messages.NODE_NOT_FOUND)
-    }
+    const data: Partial<Attributes<NodeEntity>> = { ...updateNodeDto }
+    if (!node) throw new NotFoundException(Pto.Errors.Messages.NODE_NOT_FOUND)
 
     const answer = await this.answerRepo.findOne({ where: { nodeId: node.id } })
     if (answer) throw new ForbiddenException(Pto.Errors.Messages.NODE_CANNOT_BE_UPDATED)
-    await node.update(updateNodeDto)
-    return this.mapNodeToPto(node)
+
+    if (questionImageFile || options.deleteQuestionImage) {
+      if (node.questionImage) {
+        await this.s3Service.deleteFile(node.questionImage)
+        data.questionImage = ''
+      }
+    }
+
+    if (questionImageFile) {
+      data.questionImage = await this.s3Service.uploadFile(questionImageFile, NODES_DIRECTORY)
+    }
+
+    if (correctAnswerFile || options.deleteCorrectAnswerImage) {
+      if (node.correctAnswer && node.answerType === Pto.Nodes.AnswerType.Photo) {
+        await this.s3Service.deleteFile(node.correctAnswer)
+        data.correctAnswer = ''
+      }
+    }
+    if (correctAnswerFile) {
+      data.correctAnswer = await this.s3Service.uploadFile(correctAnswerFile, NODES_DIRECTORY)
+    }
+
+    await node.update(data)
+    return await this.mapNodeToPto(node)
   }
 
   async removeNode(id: string): Promise<void> {
@@ -138,6 +186,23 @@ export class NodesService {
     if (!node) {
       throw new NotFoundException(Pto.Errors.Messages.NODE_NOT_FOUND)
     }
+
+    if (node.questionImage) {
+      try {
+        await this.s3Service.deleteFile(node.questionImage)
+      } catch (e) {
+        console.warn('Не вдалося видалити questionImage з S3', e)
+      }
+    }
+
+    if (node.correctAnswer && node.answerType === Pto.Nodes.AnswerType.Photo) {
+      try {
+        await this.s3Service.deleteFile(node.correctAnswer)
+      } catch (e) {
+        console.warn('Не вдалося видалити correctAnswer з S3', e)
+      }
+    }
+
     await node.destroy()
   }
 }

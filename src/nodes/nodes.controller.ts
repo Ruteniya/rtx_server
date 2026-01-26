@@ -1,10 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Res,
+  UseInterceptors,
+  UploadedFiles,
+  Put,
+  Query
+} from '@nestjs/common'
 import { NodesService } from './nodes.service'
 import { Dto } from 'src/dto'
 import { AdminAuth, Auth, SystemAuth, User } from 'src/decorators'
 import { GamesService } from 'src/games/games.service'
 import { Response } from 'express'
 import { Pto } from 'rtxtypes'
+import { FilesInterceptor } from '@nestjs/platform-express'
+import { Multer } from 'multer'
 
 @Controller('nodes')
 export class NodesController {
@@ -15,8 +29,12 @@ export class NodesController {
 
   @SystemAuth()
   @Post()
-  create(@Body() createNodeDto: Dto.Nodes.CreateNodeDto) {
-    return this.nodesService.createNode(createNodeDto)
+  @UseInterceptors(FilesInterceptor('files', 2))
+  create(@UploadedFiles() files: Multer.File[], @Body() createNodeDto: Dto.Nodes.CreateNodeDto) {
+    const questionImageFile = files?.find((f) => f.originalname === 'questionImage')
+    const correctAnswerFile = files?.find((f) => f.originalname === 'correctAnswer')
+
+    return this.nodesService.createNode(createNodeDto, questionImageFile, correctAnswerFile)
   }
 
   @Auth()
@@ -57,9 +75,18 @@ export class NodesController {
   }
 
   @SystemAuth()
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateNodeDto: Dto.Nodes.UpdateNodeDto) {
-    return this.nodesService.updateNode(id, updateNodeDto)
+  @Put(':id')
+  @UseInterceptors(FilesInterceptor('files', 2))
+  update(
+    @Param('id') id: string,
+    @UploadedFiles() files: Multer.File[],
+    @Body() updateNodeDto: Dto.Nodes.UpdateNodeDto,
+    @Query() options: Dto.Nodes.UpdateNodeOptionsDto
+  ) {
+    const questionImageFile = files?.find((f) => f.originalname === 'questionImage')
+    const correctAnswerFile = files?.find((f) => f.originalname === 'correctAnswer')
+
+    return this.nodesService.updateNode(id, updateNodeDto, questionImageFile, correctAnswerFile, options)
   }
 
   @SystemAuth()

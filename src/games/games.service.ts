@@ -4,6 +4,9 @@ import { GameEntity } from './entities/game.entity'
 import { Pto } from 'rtxtypes'
 import { S3Service } from 'src/s3/s3.service'
 import { Multer } from 'multer'
+import { Attributes } from 'sequelize'
+
+const GAMES_DIRECTORY = 'games'
 
 @Injectable()
 export class GamesService {
@@ -54,7 +57,7 @@ export class GamesService {
     let logoKey: string | undefined
 
     if (logoFile) {
-      logoKey = await this.s3Service.uploadFile(logoFile, 'games')
+      logoKey = await this.s3Service.uploadFile(logoFile, GAMES_DIRECTORY)
     }
 
     const game = await this.gameRepo.create({
@@ -65,28 +68,37 @@ export class GamesService {
     return await this.mapEntityToPto(game)
   }
 
-  async update(id: string, updateGame: Pto.Games.UpdateGame, logoFile?: Multer.File): Promise<Pto.Games.Game> {
+  async update(
+    id: string,
+    updateGame: Pto.Games.UpdateGame,
+    logoFile: Multer.File | null | undefined,
+    options: Pto.Games.UpdateGameOptions
+  ): Promise<Pto.Games.Game> {
     const game = await this.gameRepo.findByPk(id)
+    const data: Partial<Attributes<GameEntity>> = { ...updateGame }
 
     if (!game) {
       throw new NotFoundException(Pto.Errors.Messages.GAME_NOT_FOUND)
     }
 
-    if (logoFile) {
+    if (logoFile || options.deleteLogo === true) {
       if (game.logo) {
         try {
           await this.s3Service.deleteFile(game.logo)
+          data.logo = ''
         } catch (e) {
           console.warn('Не вдалося видалити старий логотип з S3', e)
         }
       }
-
-      const newKey = await this.s3Service.uploadFile(logoFile, `games`)
-
-      updateGame.logo = newKey
     }
 
-    await game.update(updateGame)
+    if (logoFile) {
+      const newKey = await this.s3Service.uploadFile(logoFile, GAMES_DIRECTORY)
+
+      data.logo = newKey
+    }
+
+    await game.update(data)
 
     return await this.mapEntityToPto(game)
   }
@@ -106,6 +118,14 @@ export class GamesService {
 
     if (!game) {
       throw new Error(Pto.Errors.Messages.GAME_NOT_FOUND)
+    }
+
+    if (game.logo) {
+      try {
+        await this.s3Service.deleteFile(game.logo)
+      } catch (e) {
+        console.warn('Не вдалося видалити старий логотип з S3', e)
+      }
     }
 
     await game.destroy()

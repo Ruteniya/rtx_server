@@ -1,13 +1,12 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { NodeEntity } from './entities/node.entity'
 import { Pto } from 'rtxtypes'
 import { AnswerAttributes, AnswerEntity } from './entities/answer.entity'
 import { JwtUser } from 'src/auth/types/auth.jwtPayload'
-import { Op, Order, Sequelize, WhereOptions } from 'sequelize'
+import { Op, Sequelize, WhereOptions } from 'sequelize'
 import { GroupEntity } from 'src/groups/entities/group.entity'
 import { CategoryEntity } from 'src/categories/entities/category.entity'
-import { GamesService } from 'src/games/games.service'
 
 @Injectable()
 export class AnswersService {

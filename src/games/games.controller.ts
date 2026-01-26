@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Delete, Param, Get, Patch, UseInterceptors, UploadedFile } from '@nestjs/common'
+import { Controller, Post, Body, Delete, Param, Get, UseInterceptors, UploadedFile, Put, Query } from '@nestjs/common'
 import { GamesService } from './games.service'
 import { Dto } from 'src/dto'
 import { SystemAuth } from 'src/decorators'
@@ -17,14 +17,15 @@ export class GamesController {
   }
 
   @SystemAuth()
-  @Patch(':id')
+  @Put(':id')
   @UseInterceptors(FileInterceptor('logo'))
   async update(
     @UploadedFile() file: Multer.File,
     @Body() updateGameDto: Dto.Games.UpdateGameDto,
-    @Param('id') gameId: string
+    @Param('id') gameId: string,
+    @Query() query: Dto.Games.UpdateGameOptionsDto
   ) {
-    return await this.gamesService.update(gameId, updateGameDto, file)
+    return await this.gamesService.update(gameId, updateGameDto, file, query)
   }
 
   @Get()

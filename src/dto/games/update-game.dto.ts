@@ -1,5 +1,6 @@
 import { Pto } from 'rtxtypes'
-import { IsString, MaxLength, IsOptional, IsDateString } from 'class-validator'
+import { IsString, MaxLength, IsOptional, IsDateString, IsBoolean } from 'class-validator'
+import { Transform } from 'class-transformer'
 
 export class UpdateGameDto implements Pto.Games.UpdateGame {
   @IsOptional()
@@ -18,4 +19,11 @@ export class UpdateGameDto implements Pto.Games.UpdateGame {
   @IsOptional()
   @IsDateString()
   endDate: Date
+}
+
+export class UpdateGameOptionsDto implements Pto.Games.UpdateGameOptions {
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true')
+  deleteLogo?: boolean
 }
