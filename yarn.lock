@@ -7426,7 +7426,7 @@ router@^2.0.0:
     parseurl "^1.3.3"
     path-to-regexp "^8.0.0"
 
-rtxtypes@^1.0.2:
+rtxtypes@1.0.5:
   version "1.0.5"
   resolved "https://registry.npmjs.org/rtxtypes/-/rtxtypes-1.0.5.tgz#8b3b5609d992be3267da47281cd06e9329a2c33a"
   integrity sha512-s+HMnYWHJxRud3w36c8u2Vj71E7P52FVucQRg6LBs37ogMIgi+UfIJUlB7I+BvPucB8zimiVO0xCreSABrUv+w==
