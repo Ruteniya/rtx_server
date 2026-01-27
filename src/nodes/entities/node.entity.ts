@@ -12,6 +12,7 @@ export interface NodeAttributes {
   correctAnswer?: string
   points: number
   comment?: string
+  color?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -20,7 +21,12 @@ interface CreationAttributes extends Partial<NodeAttributes> {
   name: string
   answerType: Pto.Nodes.AnswerType
   question: string
+  adminDescription?: string
+  questionImage?: string
+  correctAnswer?: string
   points: number
+  color?: string
+  comment?: string
 }
 
 @Table({ tableName: 'Nodes' })
@@ -54,6 +60,9 @@ export class NodeEntity extends Model<NodeAttributes, CreationAttributes> {
 
   @Column({ allowNull: true })
   declare comment?: string
+
+  @Column({ allowNull: true })
+  declare color?: string
 
   @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
   declare createdAt: Date

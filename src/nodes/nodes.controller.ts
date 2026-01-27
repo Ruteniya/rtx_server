@@ -39,10 +39,10 @@ export class NodesController {
 
   @Auth()
   @Get('small')
-  async findAllSmallVersion(@Res() res: Response, @User() user) {
+  async findAllSmallVersion(@Res() res: Response, @User() user, @Query() options: Pto.Nodes.NodesListQuery) {
     if (user.role == Pto.Users.UserRole.User) await this.gamesService.checkGameTime(false)
 
-    const nodes = await this.nodesService.findAllNodesSmall()
+    const nodes = await this.nodesService.findAllNodesSmall(options)
     return res.json(nodes)
   }
 

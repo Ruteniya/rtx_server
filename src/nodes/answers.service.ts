@@ -74,7 +74,8 @@ export class AnswersService {
           ? await this.s3Service.getSignedUrl(node.correctAnswer)
           : node.correctAnswer,
       points: node.points,
-      comment: node.comment
+      comment: node.comment,
+      color: node.color
     }
   }
 

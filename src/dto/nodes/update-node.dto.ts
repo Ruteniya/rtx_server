@@ -30,6 +30,10 @@ export class UpdateNodeDto implements Pto.Nodes.UpdateNode {
   @IsOptional()
   @IsString()
   comment?: string
+
+  @IsOptional()
+  @IsString()
+  color?: string
 }
 
 export class UpdateNodeOptionsDto implements Pto.Nodes.UpdateNodeOptions {

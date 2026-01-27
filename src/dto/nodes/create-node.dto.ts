@@ -30,4 +30,8 @@ export class CreateNodeDto implements Pto.Nodes.CreateNode {
   @IsOptional()
   @IsString()
   comment?: string
+
+  @IsOptional()
+  @IsString()
+  color?: string
 }

@@ -1,11 +1,12 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
-import { NodeEntity } from './entities/node.entity'
+import { NodeAttributes, NodeEntity } from './entities/node.entity'
 import { Pto } from 'rtxtypes'
 import { AnswerEntity } from './entities/answer.entity'
 import { S3Service } from 'src/s3/s3.service'
 import { Multer } from 'multer'
-import { Attributes, CreationAttributes } from 'sequelize'
+import { Attributes, CreationAttributes, Op, where, WhereOptions } from 'sequelize'
+import { Sequelize } from 'sequelize-typescript'
 
 const NODES_DIRECTORY = 'nodes'
 
@@ -34,6 +35,7 @@ export class NodesService {
           ? await this.s3Service.getSignedUrl(node.correctAnswer)
           : node.correctAnswer,
       points: node.points,
+      color: node.color,
       comment: node.comment
     }
   }
@@ -46,7 +48,8 @@ export class NodesService {
       question: node.question,
       questionImage: node.questionImage ? await this.s3Service.getSignedUrl(node.questionImage) : '',
       points: node.points,
-      comment: node.comment
+      comment: node.comment,
+      color: node.color
     }
   }
   private mapNodeToSmallPto(node: NodeEntity): Pto.Nodes.NodeSmall {
@@ -55,7 +58,8 @@ export class NodesService {
       name: node.name,
       answerType: node.answerType,
       question: node.question,
-      points: node.points
+      points: node.points,
+      color: node.color
     }
   }
 
@@ -103,10 +107,27 @@ export class NodesService {
     return await this.mapNodeToPto(node)
   }
 
-  async findAllNodesSmall(): Promise<Pto.Nodes.NodeSmallList> {
+  async findAllNodesSmall(options: Pto.Nodes.NodesListQuery): Promise<Pto.Nodes.NodeSmallList> {
+    const { searchText } = options
+    const where: WhereOptions<NodeAttributes> = {}
+
+    if (searchText) {
+      where[Op.or] = [
+        Sequelize.literal(`LOWER("name") LIKE LOWER('%${searchText}%')`),
+        Sequelize.literal(`LOWER("question") LIKE LOWER('%${searchText}%')`),
+        Sequelize.literal(`LOWER("correctAnswer") LIKE LOWER('%${searchText}%')`),
+        Sequelize.literal(`LOWER("adminDescription") LIKE LOWER('%${searchText}%')`),
+        Sequelize.literal(`LOWER("color") LIKE LOWER('%${searchText}%')`),
+        Sequelize.literal(`LOWER("comment") LIKE LOWER('%${searchText}%')`),
+        Sequelize.literal(`LOWER("answerType") LIKE LOWER('%${searchText}%')`),
+        Sequelize.literal(`CAST("points" AS TEXT) LIKE '%${searchText}%'`)
+      ]
+    }
+
     const nodes = await this.nodeRepo.findAll({
-      attributes: ['id', 'name', 'answerType', 'question', 'points'],
-      order: [['name', 'ASC']]
+      attributes: ['id', 'name', 'answerType', 'question', 'points', 'color'],
+      order: [['name', 'ASC']],
+      where
     })
     const sortedNodes = this.sortByNaturalOrder(nodes, 'name')
 
