@@ -7426,10 +7426,10 @@ router@^2.0.0:
     parseurl "^1.3.3"
     path-to-regexp "^8.0.0"
 
-rtxtypes@1.0.5:
-  version "1.0.5"
-  resolved "https://registry.npmjs.org/rtxtypes/-/rtxtypes-1.0.5.tgz#8b3b5609d992be3267da47281cd06e9329a2c33a"
-  integrity sha512-s+HMnYWHJxRud3w36c8u2Vj71E7P52FVucQRg6LBs37ogMIgi+UfIJUlB7I+BvPucB8zimiVO0xCreSABrUv+w==
+rtxtypes@1.1.2:
+  version "1.1.2"
+  resolved "https://registry.npmjs.org/rtxtypes/-/rtxtypes-1.1.2.tgz#51d27036ae747c7c781feb5c9074bdd42671b277"
+  integrity sha512-fKyUrDkbFEJNx4Y/L4JtLjyGKB8FAE9EKhqfAgX1SunnN5+CCyivflTs6GbAP4AGu1IbzJ7v12arFCpUZ1C5sw==
 
 run-parallel@^1.1.9:
   version "1.2.0"

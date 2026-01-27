@@ -1,4 +1,18 @@
-import { Controller, Get, Post, Body, ValidationPipe, Query, Patch, UsePipes, Res, Param } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  ValidationPipe,
+  Query,
+  Patch,
+  UsePipes,
+  Res,
+  Param,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException
+} from '@nestjs/common'
 import { Dto } from 'src/dto'
 import { AdminAuth, Auth, User } from 'src/decorators'
 import { JwtUser } from 'src/auth/types/auth.jwtPayload'
@@ -6,6 +20,8 @@ import { AnswersService } from './answers.service'
 import { GamesService } from 'src/games/games.service'
 import { Response } from 'express'
 import { Pto } from 'rtxtypes'
+import { FileInterceptor } from '@nestjs/platform-express'
+import { Multer } from 'multer'
 
 @Controller('answers')
 export class AnswerController {
@@ -47,10 +63,19 @@ export class AnswerController {
 
   @Auth()
   @Post()
-  async giveAnswer(@Body(ValidationPipe) giveAnswerDto: Dto.Answers.AddAnswerDto, @User() user) {
+  @UseInterceptors(FileInterceptor('answerFile'))
+  async giveAnswer(
+    @Body(ValidationPipe) giveAnswerDto: Dto.Answers.AddAnswerDto,
+    @User() user,
+    @UploadedFile() answerFile?: Multer.File
+  ) {
     if (user.role == Pto.Users.UserRole.User) await this.gamesService.checkGameTime(true)
 
-    return this.answerService.giveAnswer(giveAnswerDto, user)
+    if (!answerFile && !giveAnswerDto.answerValue) {
+      throw new BadRequestException('Either answerValue or answerFile must be provided')
+    }
+
+    return this.answerService.giveAnswer(giveAnswerDto, user, answerFile)
   }
 
   @AdminAuth()

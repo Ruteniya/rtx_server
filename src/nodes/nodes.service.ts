@@ -38,13 +38,13 @@ export class NodesService {
     }
   }
 
-  private mapNodeToShortPto(node: NodeEntity): Pto.Nodes.ShortNode {
+  private async mapNodeToShortPto(node: NodeEntity): Promise<Pto.Nodes.ShortNode> {
     return {
       id: node.id,
       name: node.name,
       answerType: node.answerType,
       question: node.question,
-      questionImage: node.questionImage,
+      questionImage: node.questionImage ? await this.s3Service.getSignedUrl(node.questionImage) : '',
       points: node.points,
       comment: node.comment
     }
@@ -115,7 +115,8 @@ export class NodesService {
 
   async findAllNodesShort(): Promise<Pto.Nodes.ShortNodeList> {
     const nodes = await this.nodeRepo.findAll({ order: [['name', 'ASC']] })
-    return { items: nodes.map(this.mapNodeToShortPto), total: nodes.length }
+    const items = await Promise.all(nodes.map((node) => this.mapNodeToShortPto(node)))
+    return { items, total: nodes.length }
   }
 
   async findAllNodes(): Promise<Pto.Nodes.NodeList> {
@@ -131,7 +132,7 @@ export class NodesService {
     if (!node) {
       throw new NotFoundException(Pto.Errors.Messages.NODE_NOT_FOUND)
     }
-    return this.mapNodeToShortPto(node)
+    return await this.mapNodeToShortPto(node)
   }
 
   async findNode(id: string): Promise<Pto.Nodes.Node> {
@@ -153,8 +154,13 @@ export class NodesService {
     const data: Partial<Attributes<NodeEntity>> = { ...updateNodeDto }
     if (!node) throw new NotFoundException(Pto.Errors.Messages.NODE_NOT_FOUND)
 
-    const answer = await this.answerRepo.findOne({ where: { nodeId: node.id } })
-    if (answer) throw new ForbiddenException(Pto.Errors.Messages.NODE_CANNOT_BE_UPDATED)
+    // Check if answerType is being changed
+    if (data.answerType !== undefined && data.answerType !== node.answerType) {
+      const answer = await this.answerRepo.findOne({ where: { nodeId: node.id } })
+      if (answer) {
+        throw new ForbiddenException('Cannot update answerType when node has answers')
+      }
+    }
 
     if (questionImageFile || options.deleteQuestionImage) {
       if (node.questionImage) {

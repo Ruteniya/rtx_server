@@ -1,10 +1,11 @@
 import { Pto } from 'rtxtypes'
-import { IsNotEmpty, IsString, MaxLength, IsOptional, IsUUID } from 'class-validator'
+import { IsNotEmpty, IsString, MaxLength, IsOptional, IsUUID, ValidateIf } from 'class-validator'
 
-export class AddAnswerDto implements Pto.Answers.AddAnswer {
+export class AddAnswerDto implements Omit<Pto.Answers.AddAnswer, 'answerValue'> {
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  answerValue: string
+  answerValue?: string
 
   @IsUUID()
   @IsNotEmpty()

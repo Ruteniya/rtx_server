@@ -4,10 +4,10 @@ import { Seeder } from 'src/seeder/seeder'
 
 async function seed() {
   const app = await NestFactory.createApplicationContext(AppModule)
-  const seedService = app.get(Seeder) // Отримуємо SeedService
+  const seedService = app.get(Seeder)
 
-  await seedService.createSeedData() // Викликаємо метод для створення даних
-  await app.close() // Закриваємо додаток
+  await seedService.createSeedData()
+  await app.close()
 }
 
 seed()
