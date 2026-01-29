@@ -19,12 +19,14 @@ import { Response } from 'express'
 import { Pto } from 'rtxtypes'
 import { FilesInterceptor } from '@nestjs/platform-express'
 import { Multer } from 'multer'
+import { GroupsService } from 'src/groups/groups.service'
 
 @Controller('nodes')
 export class NodesController {
   constructor(
     private readonly nodesService: NodesService,
-    private readonly gamesService: GamesService
+    private readonly gamesService: GamesService,
+    private readonly groupsService: GroupsService
   ) {}
 
   @SystemAuth()
@@ -40,9 +42,16 @@ export class NodesController {
   @Auth()
   @Get('small')
   async findAllSmallVersion(@Res() res: Response, @User() user, @Query() options: Pto.Nodes.NodesListQuery) {
-    if (user.role == Pto.Users.UserRole.User) await this.gamesService.checkGameTime(false)
+    const extraOptions = {}
+    if (user.role == Pto.Users.UserRole.User) {
+      await this.gamesService.checkGameTime(false)
 
-    const nodes = await this.nodesService.findAllNodesSmall(options)
+      const group = await this.groupsService.findOne(user.groupId)
+
+      extraOptions['categoryIds'] = [group.categoryId]
+    }
+
+    const nodes = await this.nodesService.findAllNodesSmall({ ...options, ...extraOptions })
     return res.json(nodes)
   }
 

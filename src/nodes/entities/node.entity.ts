@@ -1,6 +1,18 @@
 import { Pto } from 'rtxtypes'
-import { Table, Column, Model, PrimaryKey, Default, DataType, Unique, HasMany } from 'sequelize-typescript'
+import {
+  Table,
+  Column,
+  Model,
+  PrimaryKey,
+  Default,
+  DataType,
+  Unique,
+  HasMany,
+  BelongsToMany
+} from 'sequelize-typescript'
 import { AnswerEntity } from './answer.entity'
+import { CategoryEntity } from 'src/categories/entities/category.entity'
+import { NodeCategoryEntity } from './node-category.entity'
 
 export interface NodeAttributes {
   id: string
@@ -72,4 +84,10 @@ export class NodeEntity extends Model<NodeAttributes, CreationAttributes> {
 
   @HasMany(() => AnswerEntity)
   declare answers: AnswerEntity[]
+
+  @BelongsToMany(() => CategoryEntity, () => NodeCategoryEntity)
+  declare categories: CategoryEntity[]
+
+  @HasMany(() => NodeCategoryEntity)
+  declare nodeCategories: NodeCategoryEntity[]
 }

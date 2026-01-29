@@ -5,8 +5,9 @@ import { Pto } from 'rtxtypes'
 import { AnswerEntity } from './entities/answer.entity'
 import { S3Service } from 'src/s3/s3.service'
 import { Multer } from 'multer'
-import { Attributes, CreationAttributes, Op, where, WhereOptions } from 'sequelize'
+import { Attributes, CreationAttributes, Op, Transaction, WhereOptions } from 'sequelize'
 import { Sequelize } from 'sequelize-typescript'
+import { CategoryEntity } from 'src/categories/entities/category.entity'
 
 const NODES_DIRECTORY = 'nodes'
 
@@ -19,10 +20,16 @@ export class NodesService {
     @InjectModel(AnswerEntity)
     private readonly answerRepo: typeof AnswerEntity,
 
+    @InjectModel(CategoryEntity)
+    private readonly categoryRepo: typeof CategoryEntity,
+
+    private readonly sequelize: Sequelize,
+
     private readonly s3Service: S3Service
   ) {}
 
   private async mapNodeToPto(node: NodeEntity): Promise<Pto.Nodes.Node> {
+    const categoryIds = node.categories?.map((category) => category.id) || []
     return {
       id: node.id,
       name: node.name,
@@ -36,11 +43,13 @@ export class NodesService {
           : node.correctAnswer,
       points: node.points,
       color: node.color,
-      comment: node.comment
+      comment: node.comment,
+      categoryIds: categoryIds
     }
   }
 
   private async mapNodeToShortPto(node: NodeEntity): Promise<Pto.Nodes.ShortNode> {
+    const categoryIds = node.categories?.map((category) => category.id) || []
     return {
       id: node.id,
       name: node.name,
@@ -49,7 +58,8 @@ export class NodesService {
       questionImage: node.questionImage ? await this.s3Service.getSignedUrl(node.questionImage) : '',
       points: node.points,
       comment: node.comment,
-      color: node.color
+      color: node.color,
+      categoryIds: categoryIds
     }
   }
   private mapNodeToSmallPto(node: NodeEntity): Pto.Nodes.NodeSmall {
@@ -84,58 +94,109 @@ export class NodesService {
     })
   }
 
+  private async validateCategories(categoryIds: string[], transaction: Transaction): Promise<string[]> {
+    const uniqueCategoryIds = [...new Set(categoryIds || [])]
+    if (!uniqueCategoryIds.length) {
+      throw new BadRequestException('categoryIds must not be empty')
+    }
+    const categories = await this.categoryRepo.findAll({
+      where: { id: { [Op.in]: uniqueCategoryIds } },
+      attributes: ['id'],
+      transaction
+    })
+    if (categories.length !== uniqueCategoryIds.length) {
+      throw new BadRequestException(Pto.Errors.Messages.CATEGORY_NOT_FOUND)
+    }
+
+    return uniqueCategoryIds
+  }
+
   async createNode(
     createNodeDto: Pto.Nodes.CreateNode,
     questionImageFile?: Multer.File,
     correctAnswerFile?: Multer.File
   ): Promise<Pto.Nodes.Node> {
-    const existingNode = await this.nodeRepo.findOne({ where: { name: createNodeDto.name } })
-    const data: CreationAttributes<NodeEntity> = { ...createNodeDto }
-    if (existingNode) {
-      throw new BadRequestException(Pto.Errors.Messages.NODE_ALREADY_EXISTS)
-    }
+    return await this.sequelize.transaction(async (transaction) => {
+      const existingNode = await this.nodeRepo.findOne({
+        where: { name: createNodeDto.name },
+        transaction
+      })
 
-    if (questionImageFile) {
-      data.questionImage = await this.s3Service.uploadFile(questionImageFile, NODES_DIRECTORY)
-    }
+      if (existingNode) {
+        throw new BadRequestException(Pto.Errors.Messages.NODE_ALREADY_EXISTS)
+      }
 
-    if (correctAnswerFile) {
-      data.correctAnswer = await this.s3Service.uploadFile(correctAnswerFile, NODES_DIRECTORY)
-    }
+      const { categoryIds, ...nodeData } = createNodeDto
+      const data: CreationAttributes<NodeEntity> = { ...nodeData }
 
-    const node = await this.nodeRepo.create(data)
-    return await this.mapNodeToPto(node)
+      const uniqueCategoryIds = await this.validateCategories(categoryIds, transaction)
+
+      if (questionImageFile) {
+        data.questionImage = await this.s3Service.uploadFile(questionImageFile, NODES_DIRECTORY)
+      }
+
+      if (correctAnswerFile) {
+        data.correctAnswer = await this.s3Service.uploadFile(correctAnswerFile, NODES_DIRECTORY)
+      }
+
+      const node = await this.nodeRepo.create(data, { transaction })
+
+      await node.$set('categories', uniqueCategoryIds, { transaction })
+
+      await node.reload({ include: [CategoryEntity], transaction })
+
+      return await this.mapNodeToPto(node)
+    })
   }
 
   async findAllNodesSmall(options: Pto.Nodes.NodesListQuery): Promise<Pto.Nodes.NodeSmallList> {
-    const { searchText } = options
+    const { searchText, categoryIds } = options
     const where: WhereOptions<NodeAttributes> = {}
 
+    // Search
     if (searchText) {
       where[Op.or] = [
-        Sequelize.literal(`LOWER("name") LIKE LOWER('%${searchText}%')`),
-        Sequelize.literal(`LOWER("question") LIKE LOWER('%${searchText}%')`),
-        Sequelize.literal(`LOWER("correctAnswer") LIKE LOWER('%${searchText}%')`),
-        Sequelize.literal(`LOWER("adminDescription") LIKE LOWER('%${searchText}%')`),
-        Sequelize.literal(`LOWER("color") LIKE LOWER('%${searchText}%')`),
-        Sequelize.literal(`LOWER("comment") LIKE LOWER('%${searchText}%')`),
-        Sequelize.literal(`LOWER("answerType") LIKE LOWER('%${searchText}%')`),
-        Sequelize.literal(`CAST("points" AS TEXT) LIKE '%${searchText}%'`)
+        Sequelize.literal(`LOWER("NodeEntity"."name") LIKE LOWER('%${searchText}%')`),
+        Sequelize.literal(`LOWER("NodeEntity"."question") LIKE LOWER('%${searchText}%')`),
+        Sequelize.literal(`LOWER("NodeEntity"."correctAnswer") LIKE LOWER('%${searchText}%')`),
+        Sequelize.literal(`LOWER("NodeEntity"."adminDescription") LIKE LOWER('%${searchText}%')`),
+        Sequelize.literal(`LOWER("NodeEntity"."color") LIKE LOWER('%${searchText}%')`),
+        Sequelize.literal(`LOWER("NodeEntity"."comment") LIKE LOWER('%${searchText}%')`),
+        Sequelize.literal(`LOWER("NodeEntity"."answerType") LIKE LOWER('%${searchText}%')`),
+        Sequelize.literal(`CAST("NodeEntity"."points" AS TEXT) LIKE '%${searchText}%'`)
       ]
     }
 
+    // Category filter
+    const categoryIdsArray = Array.isArray(categoryIds) ? categoryIds : categoryIds ? [categoryIds] : []
+
+    const include = categoryIdsArray.length
+      ? [
+          {
+            model: CategoryEntity,
+            as: 'categories',
+            attributes: [],
+            through: { attributes: [] },
+            required: true,
+            where: { id: { [Op.in]: categoryIdsArray } }
+          }
+        ]
+      : []
+
     const nodes = await this.nodeRepo.findAll({
+      include,
       attributes: ['id', 'name', 'answerType', 'question', 'points', 'color'],
-      order: [['name', 'ASC']],
+      order: [[Sequelize.col('NodeEntity.name'), 'ASC']],
       where
     })
+
     const sortedNodes = this.sortByNaturalOrder(nodes, 'name')
 
     return { items: sortedNodes.map(this.mapNodeToSmallPto), total: nodes.length }
   }
 
   async findAllNodesShort(): Promise<Pto.Nodes.ShortNodeList> {
-    const nodes = await this.nodeRepo.findAll({ order: [['name', 'ASC']] })
+    const nodes = await this.nodeRepo.findAll({ order: [['name', 'ASC']], include: [CategoryEntity] })
     const items = await Promise.all(nodes.map((node) => this.mapNodeToShortPto(node)))
     return { items, total: nodes.length }
   }
@@ -157,7 +218,7 @@ export class NodesService {
   }
 
   async findNode(id: string): Promise<Pto.Nodes.Node> {
-    const node = await this.nodeRepo.findByPk(id)
+    const node = await this.nodeRepo.findByPk(id, { include: [CategoryEntity] })
     if (!node) {
       throw new NotFoundException(Pto.Errors.Messages.NODE_NOT_FOUND)
     }
@@ -171,41 +232,51 @@ export class NodesService {
     correctAnswerFile: Multer.File | undefined,
     options: Pto.Nodes.UpdateNodeOptions
   ): Promise<Pto.Nodes.Node> {
-    const node = await this.nodeRepo.findByPk(id)
-    const data: Partial<Attributes<NodeEntity>> = { ...updateNodeDto }
-    if (!node) throw new NotFoundException(Pto.Errors.Messages.NODE_NOT_FOUND)
+    return await this.sequelize.transaction(async (transaction) => {
+      const node = await this.nodeRepo.findByPk(id, { transaction })
+      if (!node) throw new NotFoundException(Pto.Errors.Messages.NODE_NOT_FOUND)
 
-    // Check if answerType is being changed
-    if (data.answerType !== undefined && data.answerType !== node.answerType) {
-      const answer = await this.answerRepo.findOne({ where: { nodeId: node.id } })
-      if (answer) {
-        throw new ForbiddenException('Cannot update answerType when node has answers')
+      const { categoryIds, ...nodeData } = updateNodeDto
+      const data: Partial<Attributes<NodeEntity>> = { ...nodeData }
+
+      // Check if answerType is being changed
+      if (data.answerType !== undefined && data.answerType !== node.answerType) {
+        const answer = await this.answerRepo.findOne({ where: { nodeId: node.id }, transaction })
+        if (answer) {
+          throw new ForbiddenException('Cannot update answerType when node has answers')
+        }
       }
-    }
 
-    if (questionImageFile || options.deleteQuestionImage) {
-      if (node.questionImage) {
-        await this.s3Service.deleteFile(node.questionImage)
-        data.questionImage = ''
+      if (categoryIds) {
+        const uniqueCategoryIds = await this.validateCategories(categoryIds, transaction)
+        await node.$set('categories', uniqueCategoryIds, { transaction })
+        await node.reload({ include: [CategoryEntity], transaction })
       }
-    }
 
-    if (questionImageFile) {
-      data.questionImage = await this.s3Service.uploadFile(questionImageFile, NODES_DIRECTORY)
-    }
-
-    if (correctAnswerFile || options.deleteCorrectAnswerImage) {
-      if (node.correctAnswer && node.answerType === Pto.Nodes.AnswerType.Photo) {
-        await this.s3Service.deleteFile(node.correctAnswer)
-        data.correctAnswer = ''
+      if (questionImageFile || options.deleteQuestionImage) {
+        if (node.questionImage) {
+          await this.s3Service.deleteFile(node.questionImage)
+          data.questionImage = ''
+        }
       }
-    }
-    if (correctAnswerFile) {
-      data.correctAnswer = await this.s3Service.uploadFile(correctAnswerFile, NODES_DIRECTORY)
-    }
 
-    await node.update(data)
-    return await this.mapNodeToPto(node)
+      if (questionImageFile) {
+        data.questionImage = await this.s3Service.uploadFile(questionImageFile, NODES_DIRECTORY)
+      }
+
+      if (correctAnswerFile || options.deleteCorrectAnswerImage) {
+        if (node.correctAnswer && node.answerType === Pto.Nodes.AnswerType.Photo) {
+          await this.s3Service.deleteFile(node.correctAnswer)
+          data.correctAnswer = ''
+        }
+      }
+      if (correctAnswerFile) {
+        data.correctAnswer = await this.s3Service.uploadFile(correctAnswerFile, NODES_DIRECTORY)
+      }
+
+      await node.update(data, { transaction })
+      return await this.mapNodeToPto(node)
+    })
   }
 
   async removeNode(id: string): Promise<void> {

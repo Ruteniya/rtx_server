@@ -1,5 +1,17 @@
 import { Pto } from 'rtxtypes'
-import { IsString, IsOptional, MaxLength, Min, IsEnum, ValidateIf, IsBoolean, IsNumber } from 'class-validator'
+import {
+  IsString,
+  IsOptional,
+  MaxLength,
+  Min,
+  IsEnum,
+  ValidateIf,
+  IsBoolean,
+  IsNumber,
+  IsArray,
+  ArrayNotEmpty,
+  IsUUID
+} from 'class-validator'
 import { Transform } from 'class-transformer'
 
 export class UpdateNodeDto implements Pto.Nodes.UpdateNode {
@@ -34,6 +46,12 @@ export class UpdateNodeDto implements Pto.Nodes.UpdateNode {
   @IsOptional()
   @IsString()
   color?: string
+
+  @IsArray()
+  @Transform(({ value }) => (Array.isArray(value) ? value : value?.split(',')))
+  @ArrayNotEmpty()
+  @IsUUID(undefined, { each: true })
+  categoryIds: string[]
 }
 
 export class UpdateNodeOptionsDto implements Pto.Nodes.UpdateNodeOptions {

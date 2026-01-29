@@ -18,6 +18,7 @@ import { postgresSettings } from './settings'
 import { NodeEntity } from './nodes/entities/node.entity'
 import { AnswerEntity } from './nodes/entities/answer.entity'
 import { ResultEntity } from './results/entities/result.entity'
+import { NodeCategoryEntity } from './nodes/entities/node-category.entity'
 // import { ServeStaticModule } from '@nestjs/serve-static'
 import { S3Module } from './s3/s3.module';
 // import * as path from 'path'
@@ -30,7 +31,7 @@ import { S3Module } from './s3/s3.module';
     // }),
     SequelizeModule.forRoot({
       ...postgresSettings,
-      models: [UserEntity, CategoryEntity, GroupEntity, NodeEntity, AnswerEntity, ResultEntity],
+      models: [UserEntity, CategoryEntity, GroupEntity, NodeEntity, AnswerEntity, ResultEntity, NodeCategoryEntity],
       autoLoadModels: true, // Automatically load models
       sync: { alter: true } // Auto-sync models with DB
     }),

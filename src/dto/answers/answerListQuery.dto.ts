@@ -34,6 +34,13 @@ export class AnswerListQuery extends PaginationDto implements Pto.Answers.Answer
   groupIds?: string[]
 
   @IsOptional()
+  @Transform(({ value }) => (Array.isArray(value) ? value : value?.split(',')))
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsUUID('4', { each: true })
+  nodeIds?: string[]
+
+  @IsOptional()
   @Type(() => Date)
   @IsDate()
   updatedAt?: Date

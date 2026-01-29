@@ -1,5 +1,7 @@
-import { Table, Column, Model, PrimaryKey, Default, DataType, BelongsToMany, HasMany } from 'sequelize-typescript'
+import { Table, Column, Model, PrimaryKey, Default, DataType, HasMany, BelongsToMany } from 'sequelize-typescript'
 import { GroupEntity } from 'src/groups/entities/group.entity'
+import { NodeCategoryEntity } from 'src/nodes/entities/node-category.entity'
+import { NodeEntity } from 'src/nodes/entities/node.entity'
 
 export interface CategoryAttributes {
   id: string
@@ -40,4 +42,7 @@ export class CategoryEntity extends Model<CategoryAttributes, CreationAttributes
 
   @HasMany(() => GroupEntity, { foreignKey: 'categoryId', as: 'groups' })
   declare groups: GroupEntity[]
+
+  @BelongsToMany(() => NodeEntity, () => NodeCategoryEntity)
+  declare nodes: NodeEntity[]
 }

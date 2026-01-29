@@ -9,6 +9,7 @@ import { GroupEntity } from 'src/groups/entities/group.entity'
 import { CategoryEntity } from 'src/categories/entities/category.entity'
 import { S3Service } from 'src/s3/s3.service'
 import { Multer } from 'multer'
+import { GroupsService } from 'src/groups/groups.service'
 
 const ANSWERS_DIRECTORY = 'answers'
 
@@ -17,6 +18,12 @@ export class AnswersService {
   constructor(
     @InjectModel(AnswerEntity)
     private readonly answerRepo: typeof AnswerEntity,
+
+    @InjectModel(NodeEntity)
+    private readonly nodeRepo: typeof NodeEntity,
+
+    private readonly groupsService: GroupsService,
+
     private readonly s3Service: S3Service
   ) {}
 
@@ -62,6 +69,7 @@ export class AnswersService {
   }
 
   private async mapNodeToPto(node: NodeEntity): Promise<Pto.Nodes.Node> {
+    const categoryIds = node.categories?.map((category) => category.id) || []
     return {
       id: node.id,
       name: node.name,
@@ -75,7 +83,8 @@ export class AnswersService {
           : node.correctAnswer,
       points: node.points,
       comment: node.comment,
-      color: node.color
+      color: node.color,
+      categoryIds: categoryIds
     }
   }
 
@@ -100,6 +109,7 @@ export class AnswersService {
       processed,
       correct,
       groupIds,
+      nodeIds,
       updatedAt,
       page = 1,
       size = 10,
@@ -121,8 +131,16 @@ export class AnswersService {
     }
 
     if (processed !== undefined) where.processed = processed
-    if (correct !== undefined) where.correct = correct
+    if (correct !== undefined) {
+      if (correct) {
+        where.correct = true
+      } else {
+        where.correct = false
+        where.processed = true
+      }
+    }
     if (groupIds?.length) where.groupId = { [Op.in]: groupIds }
+    if (nodeIds?.length) where.nodeId = { [Op.in]: nodeIds }
     if (updatedAt) where.updatedAt = { [Op.gte]: updatedAt }
 
     const result = await this.answerRepo.findAndCountAll({
@@ -143,7 +161,8 @@ export class AnswersService {
           ],
           required: true
         }
-      ]
+      ],
+      order: [[sortBy, sortOrder]]
     })
 
     return {
@@ -172,6 +191,16 @@ export class AnswersService {
     // Validate that either answerValue or answerFile is provided
     if (!answerValue && !answerFile) {
       throw new BadRequestException('Either answerValue or answerFile must be provided')
+    }
+
+    const group = await this.groupsService.findOne(groupId)
+    if (!group) throw new NotFoundException(Pto.Errors.Messages.GROUP_NOT_FOUND)
+
+    const node = await this.nodeRepo.findByPk(nodeId, { include: [CategoryEntity] })
+    if (!node) throw new NotFoundException(Pto.Errors.Messages.NODE_NOT_FOUND)
+
+    if (!node.categories.map((category) => category.id).includes(group.categoryId)) {
+      throw new ForbiddenException('Ця точка не належить до категорії групи')
     }
 
     const existingAnswer = await this.answerRepo.findOne({ where: { groupId, nodeId } })
