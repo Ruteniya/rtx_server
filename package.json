@@ -53,6 +53,7 @@
     "rxjs": "^7.8.1",
     "sequelize": "^6.37.5",
     "sequelize-typescript": "^2.1.6",
+    "sharp": "^0.34.5",
     "typeorm": "^0.3.20",
     "webpack": "^5.0.0"
   },
@@ -70,6 +71,7 @@
     "@types/passport-google-oauth20": "^2.0.16",
     "@types/passport-jwt": "^4.0.1",
     "@types/sequelize": "^4.28.20",
+    "@types/sharp": "^0.32.0",
     "@types/supertest": "^6.0.2",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
