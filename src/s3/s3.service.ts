@@ -143,6 +143,33 @@ export class S3Service {
     return key
   }
 
+  async uploadBuffer(buffer: Buffer, key: string, contentType: string): Promise<void> {
+    await this.s3.send(
+      new PutObjectCommand({
+        Bucket: settings.aws.s3.s3BucketName,
+        Key: key,
+        Body: buffer,
+        ContentType: contentType
+      })
+    )
+  }
+
+  async uploadBufferWithRandomKey(
+    buffer: Buffer,
+    folder: string,
+    extension: string,
+    contentType: string,
+    prefix?: string
+  ): Promise<string> {
+    const sanitizedExtension = extension.startsWith('.') ? extension : `.${extension}`
+    const keyPrefix = prefix ? `${prefix}-` : ''
+    const key = `${folder}/${keyPrefix}${crypto.randomUUID()}${sanitizedExtension}`
+
+    await this.uploadBuffer(buffer, key, contentType)
+
+    return key
+  }
+
   async deleteFile(key: string): Promise<void> {
     await this.s3.send(
       new DeleteObjectCommand({

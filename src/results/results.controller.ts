@@ -1,7 +1,8 @@
-import { Controller, Get, Post } from '@nestjs/common'
+import { Controller, Get, Post, Query } from '@nestjs/common'
 import { ResultsService } from './results.service'
 
 import { AdminAuth, SystemAuth } from 'src/decorators'
+import { Dto } from 'src/dto'
 
 @Controller('results')
 export class ResultsController {
@@ -15,7 +16,13 @@ export class ResultsController {
 
   @AdminAuth()
   @Get()
-  findAll() {
-    return this.resultsService.findAll()
+  findAll(@Query() query: Dto.Results.ResultsListQueryDto) {
+    return this.resultsService.findAll(query)
+  }
+
+  @AdminAuth()
+  @Get('export/csv')
+  exportCsv(): Promise<{ url: string }> {
+    return this.resultsService.exportResultsCsv()
   }
 }

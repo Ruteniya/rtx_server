@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, BadRequestException } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common'
 import { GroupsService } from './groups.service'
 import { Dto } from 'src/dto'
 import { Pto } from 'rtxtypes'
@@ -10,8 +10,14 @@ export class GroupsController {
 
   @AdminAuth()
   @Get()
-  async findAll(): Promise<Pto.Groups.GroupList> {
-    return this.groupsService.findAll()
+  async findAll(@Query() query: Pto.Groups.GroupsListQuery): Promise<Pto.Groups.GroupList> {
+    return this.groupsService.findAll(query)
+  }
+
+  @AdminAuth()
+  @Get('/export/csv')
+  async exportCsv(): Promise<Pto.App.File> {
+    return this.groupsService.exportGroupsCsv()
   }
 
   @AdminAuth()
