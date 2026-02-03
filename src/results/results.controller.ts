@@ -7,7 +7,9 @@ import { CustomLogger } from 'src/utils'
 
 @Controller('results')
 export class ResultsController {
-  constructor(private readonly resultsService: ResultsService, private readonly logger: CustomLogger) {}
+  private readonly logger = new CustomLogger(ResultsController.name)
+
+  constructor(private readonly resultsService: ResultsService) {}
 
   @SystemAuth()
   @Post()
