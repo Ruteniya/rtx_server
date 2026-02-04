@@ -69,6 +69,13 @@ export const settings = {
       },
       s3BucketName: process.env.BUCKET_NAME
     }
+  },
+  smtp: {
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
+    secure: process.env.SMTP_SECURE === 'true',
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
   }
 }
 

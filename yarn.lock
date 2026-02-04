@@ -6971,6 +6971,11 @@ node-releases@^2.0.19:
   resolved "https://registry.yarnpkg.com/node-releases/-/node-releases-2.0.19.tgz#9e445a52950951ec4d177d843af370b411caf314"
   integrity sha512-xxOWJsBKtzAq7DY0J+DTzuz58K8e7sJbdgwkbMWQe8UYB6ekmsQ45q0M/tJDsGaZmbC+l7n57UV8Hl5tHxO9uw==
 
+nodemailer@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-8.0.0.tgz#2197b7e988ac26d6d30de7e64e209fc0b306f9b2"
+  integrity sha512-xvVJf/f0bzmNpnRIbhCp/IKxaHgJ6QynvUbLXzzMRPG3LDQr5oXkYuw4uDFyFYs8cge8agwwrJAXZsd4hhMquw==
+
 nopt@^7.2.1:
   version "7.2.1"
   resolved "https://registry.yarnpkg.com/nopt/-/nopt-7.2.1.tgz#1cac0eab9b8e97c9093338446eddd40b2c8ca1e7"
@@ -7711,10 +7716,10 @@ router@^2.0.0:
     parseurl "^1.3.3"
     path-to-regexp "^8.0.0"
 
-rtxtypes@1.1.12:
-  version "1.1.12"
-  resolved "https://registry.yarnpkg.com/rtxtypes/-/rtxtypes-1.1.12.tgz#bcfdd2ea27316e65dc014ed31124c697d5806878"
-  integrity sha512-qiM1buLheeav50nxhaGzYJ2BCaf4KN4WAgYi2WyH+CPWEnIWDhCD2wU+DhIVSuMepGPdLy8jWWR8yiSOa6tYpA==
+rtxtypes@1.1.13:
+  version "1.1.13"
+  resolved "https://registry.yarnpkg.com/rtxtypes/-/rtxtypes-1.1.13.tgz#47bd4845a8bfd25c82954f3ab84d07af6b7fc94d"
+  integrity sha512-hAXEduj4qlcTsb+5UHtStdJvmucNTZZIsCn2SGf+JwL5pvNWEGHS54Swp3FcpJ8PR0uzY5MqpxU2JBDndTYfSw==
 
 run-parallel@^1.1.9:
   version "1.2.0"

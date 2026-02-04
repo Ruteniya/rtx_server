@@ -25,6 +25,7 @@ import { S3Module } from './s3/s3.module'
 import { WinstonModule } from 'nest-winston'
 import { winstonConfig } from './utils/winston.config'
 import { HttpLoggingInterceptor } from './interceptors/http-logging.interceptor'
+import { EmailModule } from './email/email.module';
 // import * as path from 'path'
 
 @Module({
@@ -46,7 +47,8 @@ import { HttpLoggingInterceptor } from './interceptors/http-logging.interceptor'
     NodesModule,
     ResultsModule,
     S3Module,
-    WinstonModule.forRoot(winstonConfig)
+    WinstonModule.forRoot(winstonConfig),
+    EmailModule
   ],
   controllers: [AppController],
   providers: [

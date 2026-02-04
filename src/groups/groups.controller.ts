@@ -37,6 +37,7 @@ export class GroupsController {
     return this.groupsService.create(createGroupDto)
   }
 
+  @SystemAuth()
   @Post('bulk')
   async bulkCreate(@Body() dto: Dto.Groups.CreateGroupFromCsvDto) {
     return this.groupsService.bulkCreateFromCsv(dto.groups)
@@ -52,5 +53,11 @@ export class GroupsController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return this.groupsService.remove(id)
+  }
+
+  @SystemAuth()
+  @Post('send-emails')
+  async sendEmails(@Body() dto: Dto.Groups.SendEmailsDto) {
+    return this.groupsService.sendGroupCodeEmails(dto.groupIds)
   }
 }

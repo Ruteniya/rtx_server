@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { GroupAttributes, GroupEntity } from './entities/group.entity'
 import { Pto } from 'rtxtypes'
@@ -6,6 +6,8 @@ import { CategoryEntity } from 'src/categories/entities/category.entity'
 import { UserEntity } from 'src/users/entities/user.entity'
 import { Op, WhereOptions } from 'sequelize'
 import { S3Service } from 'src/s3/s3.service'
+import { EmailService } from 'src/email/email.service'
+import { GamesService } from 'src/games/games.service'
 
 @Injectable()
 export class GroupsService {
@@ -15,6 +17,12 @@ export class GroupsService {
 
     @InjectModel(CategoryEntity) private readonly categoryRepo: typeof CategoryEntity,
     
+    @Inject(EmailService)
+    private readonly emailService: EmailService,
+
+    @Inject(GamesService)
+    private readonly gamesService: GamesService,
+
     private readonly s3Service: S3Service
   ) {}
 
@@ -197,5 +205,20 @@ export class GroupsService {
   async findByName(name: string): Promise<Pto.Groups.Group | null> {
     const group = await this.groupRepo.findOne({ where: { name } })
     return group ? this.mapEntityToPto(group) : null
+  }
+
+  async sendGroupCodeEmails(groupIds: string[]): Promise<{ email: string; groupId: string; success: boolean; info?: any; error?: string }[]> {
+    const game = await this.gamesService.findOne()
+    const groups = await this.groupRepo.findAll({ where: { id: { [Op.in]: groupIds } } })
+    if (groups.length !== groupIds.length) {
+      throw new NotFoundException(Pto.Errors.Messages.GROUP_NOT_FOUND)
+    }
+    const results: { email: string; groupId: string; success: boolean; info?: any; error?: string }[] = []
+    for (const group of groups) {
+      const result = await this.emailService.sendGroupCodeEmail(game, group)
+      results.push(...result)
+    }
+
+    return results
   }
 }
