@@ -186,6 +186,7 @@ export class NodesService {
       : []
 
     const result = await this.nodeRepo.findAndCountAll({
+      distinct: true,
       include,
       attributes: ['id', 'name', 'answerType', 'question', 'points', 'color'],
       where,
