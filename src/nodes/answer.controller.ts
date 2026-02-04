@@ -33,14 +33,14 @@ export class AnswerController {
   @Auth()
   @Get()
   async getAnswers(@User() user: JwtUser) {
-    if (user.role == Pto.Users.UserRole.User) await this.gamesService.checkGameTime(false)
+    if (user.role == Pto.Users.UserRole.User) await this.gamesService.validateGame(false)
     return this.answerService.getAnswers(user.groupId)
   }
 
   @Auth()
   @Get('/small')
   async getAnswersSmallVersion(@Res() res: Response, @User() user) {
-    if (user.role == Pto.Users.UserRole.User) await this.gamesService.checkGameTime(false)
+    if (user.role == Pto.Users.UserRole.User) await this.gamesService.validateGame(false)
 
     const answers = await this.answerService.getAnswersSmall(user.groupId)
     return res.json(answers)
@@ -49,7 +49,7 @@ export class AnswerController {
   @Auth()
   @Get('/full/:id')
   async getAnswer(@Param('id') answerId, @User() user) {
-    if (user.role == Pto.Users.UserRole.User) await this.gamesService.checkGameTime(false)
+    if (user.role == Pto.Users.UserRole.User) await this.gamesService.validateGame(false)
 
     return this.answerService.getAnswer(answerId, user.groupId)
   }
@@ -69,7 +69,7 @@ export class AnswerController {
     @User() user,
     @UploadedFile() answerFile?: Multer.File
   ) {
-    if (user.role == Pto.Users.UserRole.User) await this.gamesService.checkGameTime(true)
+    if (user.role == Pto.Users.UserRole.User) await this.gamesService.validateGame(true)
 
     if (!answerFile && !giveAnswerDto.answerValue) {
       throw new BadRequestException('Either answerValue or answerFile must be provided')

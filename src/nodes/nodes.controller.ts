@@ -44,7 +44,7 @@ export class NodesController {
   async findAllSmallVersion(@Res() res: Response, @User() user, @Query() options: Pto.Nodes.NodesListQuery) {
     const extraOptions = {}
     if (user.role == Pto.Users.UserRole.User) {
-      await this.gamesService.checkGameTime(false)
+      await this.gamesService.validateGame(false)
 
       const group = await this.groupsService.findOne(user.groupId)
 
@@ -58,7 +58,7 @@ export class NodesController {
   @Auth()
   @Get('short')
   async findAllShortVersion(@User() user) {
-    if (user.role == Pto.Users.UserRole.User) await this.gamesService.checkGameTime()
+    if (user.role == Pto.Users.UserRole.User) await this.gamesService.validateGame()
 
     return this.nodesService.findAllNodesShort()
   }
@@ -72,7 +72,7 @@ export class NodesController {
   @Auth()
   @Get('short/:id')
   async findShortOne(@Param('id') id: string, @User() user) {
-    if (user.role == Pto.Users.UserRole.User) await this.gamesService.checkGameTime(false)
+    if (user.role == Pto.Users.UserRole.User) await this.gamesService.validateGame(false)
 
     return this.nodesService.findShortNode(id)
   }

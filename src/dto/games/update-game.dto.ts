@@ -1,5 +1,5 @@
 import { Pto } from 'rtxtypes'
-import { IsString, MaxLength, IsOptional, IsDateString, IsBoolean } from 'class-validator'
+import { IsString, MaxLength, IsOptional, IsDateString, IsBoolean, IsEnum } from 'class-validator'
 import { Transform } from 'class-transformer'
 
 export class UpdateGameDto implements Pto.Games.UpdateGame {
@@ -11,6 +11,9 @@ export class UpdateGameDto implements Pto.Games.UpdateGame {
   @IsOptional()
   @IsString()
   description?: string
+
+  @IsEnum(Pto.Games.GameStatus)
+  status: Pto.Games.GameStatus
 
   @IsOptional()
   @IsDateString()

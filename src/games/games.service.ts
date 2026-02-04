@@ -22,19 +22,25 @@ export class GamesService {
       name: game.name,
       description: game.description || '',
       logo: game.logo ? await this.s3Service.getSignedUrl(game.logo) : '',
+      status: game.status,
       startDate: game.startDate,
       endDate: game.endDate
     }
   }
 
   // Method to check whether the game is within the allowed time
-  async checkGameTime(checkEndDate: boolean = true): Promise<void> {
+  async validateGame(checkEndDate: boolean = true): Promise<void> {
     const game = await this.gameRepo.findOne()
 
     if (!game) {
       throw new NotFoundException(Pto.Errors.Messages.GAME_NOT_FOUND)
     }
 
+    await this.validateGameTime(game, checkEndDate)
+    await this.validateGameStatus(game.status)
+  }
+
+  private async validateGameTime(game: GameEntity, checkEndDate: boolean = true): Promise<void> {
     const currentTime = new Date()
 
     if (currentTime < new Date(game.startDate)) {
@@ -45,6 +51,20 @@ export class GamesService {
       if (currentTime > new Date(game.endDate)) {
         throw new BadRequestException('Гра закінчилась')
       }
+    }
+  }
+
+  private async validateGameStatus(status: Pto.Games.GameStatus): Promise<void> {
+    if (status === Pto.Games.GameStatus.Draft) {
+      throw new BadRequestException("Гра ще не готова до початку")
+    }
+
+    if (status === Pto.Games.GameStatus.Finished) {
+      throw new BadRequestException("Гра вже закінчилась")
+    }
+
+    if (status === Pto.Games.GameStatus.Stopped) {
+      throw new BadRequestException("Гра призупинена")
     }
   }
 

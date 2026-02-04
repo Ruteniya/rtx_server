@@ -1,3 +1,4 @@
+import { Pto } from 'rtxtypes'
 import { Table, Column, Model, PrimaryKey, Default, DataType } from 'sequelize-typescript'
 
 export interface GameAttributes {
@@ -5,6 +6,7 @@ export interface GameAttributes {
   name: string
   description?: string
   logo?: string
+  status: Pto.Games.GameStatus
   startDate: Date
   endDate: Date
   createdAt: Date
@@ -34,6 +36,9 @@ export class GameEntity extends Model<GameAttributes, CreationAttributes> {
 
   @Column({ type: DataType.STRING(512), allowNull: true })
   declare logo?: string
+
+  @Column({ type: DataType.STRING(50), allowNull: false })
+  declare status: Pto.Games.GameStatus
 
   @Column({ type: DataType.DATE, allowNull: false })
   declare startDate: Date
