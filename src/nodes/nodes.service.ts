@@ -188,27 +188,45 @@ export class NodesService {
     const result = await this.nodeRepo.findAndCountAll({
       include,
       attributes: ['id', 'name', 'answerType', 'question', 'points', 'color'],
+      where,
       order: [
-        [Sequelize.literal(`CASE WHEN "NodeEntity"."name" ~ '^[0-9]' THEN 1 ELSE 0 END`), 'ASC'],
+        [
+          Sequelize.literal(`CASE WHEN "NodeEntity"."name" ~ '^[0-9]' THEN 1 ELSE 0 END`),
+          'ASC'
+        ],
+        [
+          Sequelize.literal(`CASE 
+            WHEN "NodeEntity"."name" ~ '^[0-9]+' THEN CAST((regexp_match("NodeEntity"."name", '^([0-9]+)'))[1] AS INTEGER)
+            ELSE 0
+          END`),
+          'ASC'
+        ],
         [Sequelize.col('NodeEntity.name'), 'ASC']
       ],
-      where,
       offset,
       limit: size
     })
-
-
 
     return { items: result.rows.map(this.mapNodeToSmallPto), total: result.count }
   }
 
   async findAllNodesShort(): Promise<Pto.Nodes.ShortNodeList> {
     const nodes = await this.nodeRepo.findAll({
+      include: [CategoryEntity],
       order: [
-        [Sequelize.literal(`CASE WHEN "NodeEntity"."name" ~ '^[0-9]' THEN 1 ELSE 0 END`), 'ASC'],
-        ['name', 'ASC']
-      ],
-      include: [CategoryEntity]
+        [
+          Sequelize.literal(`CASE WHEN "NodeEntity"."name" ~ '^[0-9]' THEN 1 ELSE 0 END`),
+          'ASC'
+        ],
+        [
+          Sequelize.literal(`CASE 
+            WHEN "NodeEntity"."name" ~ '^[0-9]+' THEN CAST((regexp_match("NodeEntity"."name", '^([0-9]+)'))[1] AS INTEGER)
+            ELSE 0
+          END`),
+          'ASC'
+        ],
+        [Sequelize.col('NodeEntity.name'), 'ASC']
+      ]
     })
     const items = await Promise.all(nodes.map((node) => this.mapNodeToShortPto(node)))
     return { items, total: nodes.length }
@@ -217,13 +235,21 @@ export class NodesService {
   async findAllNodes(): Promise<Pto.Nodes.NodeList> {
     const nodes = await this.nodeRepo.findAll({
       order: [
-        [Sequelize.literal(`CASE WHEN "NodeEntity"."name" ~ '^[0-9]' THEN 1 ELSE 0 END`), 'ASC'],
-        ['name', 'ASC']
+        [
+          Sequelize.literal(`CASE WHEN "NodeEntity"."name" ~ '^[0-9]' THEN 1 ELSE 0 END`),
+          'ASC'
+        ],
+        [
+          Sequelize.literal(`CASE 
+            WHEN "NodeEntity"."name" ~ '^[0-9]+' THEN CAST((regexp_match("NodeEntity"."name", '^([0-9]+)'))[1] AS INTEGER)
+            ELSE 0
+          END`),
+          'ASC'
+        ],
+        [Sequelize.col('NodeEntity.name'), 'ASC']
       ]
     })
-
-    const sortedNodes = this.sortByNaturalOrder(nodes, 'name')
-    const items = await Promise.all(sortedNodes.map((node) => this.mapNodeToPto(node)))
+    const items = await Promise.all(nodes.map((node) => this.mapNodeToPto(node)))
     return { items, total: nodes.length }
   }
 
