@@ -37,7 +37,6 @@ import { HttpLoggingInterceptor } from './interceptors/http-logging.interceptor'
       ...postgresSettings,
       models: [UserEntity, CategoryEntity, GroupEntity, NodeEntity, AnswerEntity, ResultEntity, NodeCategoryEntity],
       autoLoadModels: true, // Automatically load models
-      sync: { alter: true } // Auto-sync models with DB
     }),
     GamesModule,
     CategoriesModule,

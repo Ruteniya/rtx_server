@@ -37,6 +37,11 @@ export class GroupsController {
     return this.groupsService.create(createGroupDto)
   }
 
+  @Post('bulk')
+  async bulkCreate(@Body() dto: Dto.Groups.CreateGroupFromCsvDto) {
+    return this.groupsService.bulkCreateFromCsv(dto.groups)
+  }
+
   @SystemAuth()
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateGroupDto: Dto.Groups.UpdateGroupDto) {

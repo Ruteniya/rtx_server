@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { GroupAttributes, GroupEntity } from './entities/group.entity'
 import { Pto } from 'rtxtypes'
@@ -12,6 +12,9 @@ export class GroupsService {
   constructor(
     @InjectModel(GroupEntity)
     private readonly groupRepo: typeof GroupEntity,
+
+    @InjectModel(CategoryEntity) private readonly categoryRepo: typeof CategoryEntity,
+    
     private readonly s3Service: S3Service
   ) {}
 
@@ -21,7 +24,8 @@ export class GroupsService {
       name: group.name,
       numberOfParticipants: group.numberOfParticipants,
       categoryId: group.categoryId,
-      category: group.category
+      category: group.category,
+      emails: group.emails
     }
   }
 
@@ -48,6 +52,36 @@ export class GroupsService {
   async create(createGroupDto: Pto.Groups.CreateGroup): Promise<Pto.Groups.Group> {
     const group = await this.groupRepo.create(createGroupDto)
     return this.mapEntityToPto(group)
+  }
+
+  async bulkCreateFromCsv(groups: {
+    name: string
+    categoryName: string
+    numberOfParticipants: number
+    emails: string[]
+  }[]) {
+    const categories = await this.categoryRepo.findAll()
+    const categoryMap = new Map(categories.map((c) => [c.name, c.id]))
+
+    const createdGroups: GroupEntity[] = []
+
+    for (const group of groups) {
+      const categoryId = categoryMap.get(group.categoryName)
+      if (!categoryId) {
+        throw new BadRequestException(`Категорія "${group.categoryName}" не знайдена`)
+      }
+
+      const created = await this.groupRepo.create({
+        name: group.name,
+        categoryId,
+        numberOfParticipants: group.numberOfParticipants,
+        emails: group.emails
+      })
+
+      createdGroups.push(created)
+    }
+
+    return createdGroups
   }
 
   async findAll(query: Pto.Groups.GroupsListQuery): Promise<Pto.Groups.GroupList> {
@@ -91,7 +125,7 @@ export class GroupsService {
     }
   }
 
-  async findPopulatedOne(id: string): Promise<Pto.Groups.Group> {
+  async findPopulatedOne(id: string): Promise<Pto.Groups.PopulatedGroup> {
     const group = await this.groupRepo.findByPk(id, { include: [CategoryEntity, UserEntity] })
     if (!group) {
       throw new NotFoundException(Pto.Errors.Messages.GROUP_NOT_FOUND)
@@ -140,7 +174,15 @@ export class GroupsService {
     if (!group) {
       throw new NotFoundException(Pto.Errors.Messages.GROUP_NOT_FOUND)
     }
-    await group.update(updateGroupDto)
+
+    console.log(updateGroupDto)
+
+    await group.update({
+      ...updateGroupDto,
+      emails: Array.isArray(updateGroupDto.emails)
+        ? updateGroupDto.emails
+        : group.emails
+    })
   }
 
   async remove(id: string): Promise<void> {

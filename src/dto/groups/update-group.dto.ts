@@ -1,5 +1,5 @@
 import { Pto } from 'rtxtypes'
-import { IsNotEmpty, IsString, IsInt, Min, MaxLength, IsOptional } from 'class-validator'
+import { IsString, IsInt, Min, MaxLength, IsOptional, IsArray } from 'class-validator'
 
 export class UpdateGroupDto implements Pto.Groups.UpdateGroup {
   @IsOptional()
@@ -15,4 +15,8 @@ export class UpdateGroupDto implements Pto.Groups.UpdateGroup {
   @IsString()
   @IsOptional()
   categoryId: string
+
+  @IsArray()
+  @IsString({ each: true })
+  emails: string[]
 }

@@ -18,13 +18,16 @@ export interface GroupAttributes {
   name: string
   numberOfParticipants: number
   categoryId: string
+  emails: string[]
 }
 
 interface CreationAttributes extends Partial<GroupAttributes> {
   name: string
   numberOfParticipants: number
   categoryId: string
+  emails?: string[]
 }
+
 
 @Table({ tableName: 'Groups' })
 export class GroupEntity extends Model<GroupAttributes, CreationAttributes> {
@@ -42,6 +45,14 @@ export class GroupEntity extends Model<GroupAttributes, CreationAttributes> {
   @ForeignKey(() => CategoryEntity)
   @Column({ type: DataType.UUID, allowNull: false })
   declare categoryId: string
+
+  @Column({
+    type: DataType.ARRAY(DataType.STRING),
+    allowNull: false,
+    defaultValue: []
+  })
+  declare emails: string[]
+  
 
   @BelongsTo(() => CategoryEntity, { foreignKey: 'categoryId', as: 'category' })
   declare category: CategoryEntity

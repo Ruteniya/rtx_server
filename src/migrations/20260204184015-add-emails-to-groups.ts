@@ -1,13 +1,13 @@
 import { QueryInterface, DataTypes } from 'sequelize'
 
 export const up = async (queryInterface: QueryInterface) => {
-  await queryInterface.addColumn('Games', 'status', {
-    type: DataTypes.STRING(50),
+  await queryInterface.addColumn('Groups', 'emails', {
+    type: DataTypes.ARRAY(DataTypes.STRING),
     allowNull: false,
-    defaultValue: 'Draft'
+    defaultValue: []
   })
 }
 
 export const down = async (queryInterface: QueryInterface) => {
-  await queryInterface.removeColumn('Games', 'status')
+  await queryInterface.removeColumn('Groups', 'emails')
 }

@@ -1,5 +1,5 @@
 import { Pto } from 'rtxtypes'
-import { IsNotEmpty, IsString, IsInt, Min, MaxLength, IsUUID } from 'class-validator'
+import { IsNotEmpty, IsString, IsInt, Min, MaxLength, IsUUID, IsArray, IsOptional } from 'class-validator'
 
 export class CreateGroupDto implements Pto.Groups.CreateGroup {
   @IsString()
@@ -14,4 +14,8 @@ export class CreateGroupDto implements Pto.Groups.CreateGroup {
   @IsUUID()
   @IsNotEmpty()
   categoryId: string
+
+  @IsArray()
+  @IsString({ each: true })
+  emails: string[]
 }

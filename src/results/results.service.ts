@@ -31,6 +31,7 @@ export class ResultsService {
       numberOfParticipants: group.numberOfParticipants,
       categoryId: group.categoryId,
       category: group.category,
+      emails: group.emails,
       results: results.map((result) => ({
         id: result.id,
         nodeId: result.nodeId,

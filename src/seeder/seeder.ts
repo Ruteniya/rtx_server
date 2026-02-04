@@ -31,7 +31,8 @@ export class Seeder {
         adminGroup = await this.groupsService.create({
           name: 'Адміністратори',
           numberOfParticipants: 5,
-          categoryId: leaderCategory.id
+          categoryId: leaderCategory.id,
+          emails: []
         })
         this.logger.log('✅ Група "Адміністратори" створена')
       } else {
