@@ -89,7 +89,7 @@ export class NodesService {
       } else if (!aIsNum && !bIsNum) {
         return aValue.localeCompare(bValue, undefined, { numeric: true })
       } else {
-        return aIsNum ? -1 : 1
+        return aIsNum ? 1 : -1
       }
     })
   }
@@ -150,7 +150,9 @@ export class NodesService {
   }
 
   async findAllNodesSmall(options: Pto.Nodes.NodesListQuery): Promise<Pto.Nodes.NodeSmallList> {
-    const { searchText, categoryIds } = options
+    const {page = 1, size = 10, searchText, categoryIds } = options
+    const offset = (page - 1) * size
+
     const where: WhereOptions<NodeAttributes> = {}
 
     // Search
@@ -183,26 +185,42 @@ export class NodesService {
         ]
       : []
 
-    const nodes = await this.nodeRepo.findAll({
+    const result = await this.nodeRepo.findAndCountAll({
       include,
       attributes: ['id', 'name', 'answerType', 'question', 'points', 'color'],
-      order: [[Sequelize.col('NodeEntity.name'), 'ASC']],
-      where
+      order: [
+        [Sequelize.literal(`CASE WHEN "NodeEntity"."name" ~ '^[0-9]' THEN 1 ELSE 0 END`), 'ASC'],
+        [Sequelize.col('NodeEntity.name'), 'ASC']
+      ],
+      where,
+      offset,
+      limit: size
     })
 
-    const sortedNodes = this.sortByNaturalOrder(nodes, 'name')
 
-    return { items: sortedNodes.map(this.mapNodeToSmallPto), total: nodes.length }
+
+    return { items: result.rows.map(this.mapNodeToSmallPto), total: result.count }
   }
 
   async findAllNodesShort(): Promise<Pto.Nodes.ShortNodeList> {
-    const nodes = await this.nodeRepo.findAll({ order: [['name', 'ASC']], include: [CategoryEntity] })
+    const nodes = await this.nodeRepo.findAll({
+      order: [
+        [Sequelize.literal(`CASE WHEN "NodeEntity"."name" ~ '^[0-9]' THEN 1 ELSE 0 END`), 'ASC'],
+        ['name', 'ASC']
+      ],
+      include: [CategoryEntity]
+    })
     const items = await Promise.all(nodes.map((node) => this.mapNodeToShortPto(node)))
     return { items, total: nodes.length }
   }
 
   async findAllNodes(): Promise<Pto.Nodes.NodeList> {
-    const nodes = await this.nodeRepo.findAll({ order: [['name', 'ASC']] })
+    const nodes = await this.nodeRepo.findAll({
+      order: [
+        [Sequelize.literal(`CASE WHEN "NodeEntity"."name" ~ '^[0-9]' THEN 1 ELSE 0 END`), 'ASC'],
+        ['name', 'ASC']
+      ]
+    })
 
     const sortedNodes = this.sortByNaturalOrder(nodes, 'name')
     const items = await Promise.all(sortedNodes.map((node) => this.mapNodeToPto(node)))
