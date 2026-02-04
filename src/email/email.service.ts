@@ -20,6 +20,17 @@ export class EmailService {
     })
   }
 
+  async verifyConnection(): Promise<boolean> {
+    try {
+      await this.transporter.verify()
+      this.logger.log('✅ Підключення до SMTP успішне')
+      return true
+    } catch (err: any) {
+      this.logger.error('❌ Не вдалося підключитися до SMTP:', err)
+      return false
+    }
+  }
+
   async sendGroupCodeEmail(game: Pto.Games.Game, group: Pto.Groups.Group): Promise<{ email: string; groupId: string; success: boolean; info?: any; error?: string }[]> {
     const subject = `Код вашої команди для гри "${game.name}"`
     const text = `
