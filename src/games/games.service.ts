@@ -82,6 +82,7 @@ export class GamesService {
 
     const game = await this.gameRepo.create({
       ...createGame,
+      status: Pto.Games.GameStatus.Draft,
       logo: logoKey
     })
 
