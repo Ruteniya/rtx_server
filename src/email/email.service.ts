@@ -13,6 +13,7 @@ export class EmailService {
       host: settings.smtp.host,
       port: settings.smtp.port,
       secure: settings.smtp.secure, // true for 465
+      requireTLS: settings.smtp.requireTLS,
       auth: {
         user: settings.smtp.user,
         pass: settings.smtp.pass
