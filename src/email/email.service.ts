@@ -17,7 +17,9 @@ export class EmailService {
       auth: {
         user: settings.smtp.user,
         pass: settings.smtp.pass
-      }
+      },
+      logger: true,
+      debug: true
     })
   }
 
