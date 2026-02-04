@@ -1,16 +1,17 @@
 import helmet from 'helmet'
 import { NestFactory } from '@nestjs/core'
 import { NestExpressApplication } from '@nestjs/platform-express'
-import { ValidationPipe } from '@nestjs/common'
-import { CustomLogger } from 'src/utils'
+import { ValidationPipe, LoggerService } from '@nestjs/common'
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston'
 import { settings } from './settings'
 import { AppModule } from './app.module'
 import { CustomParseUUIDPipe } from './pipes/custom-parse-uuid.pipe'
 import * as cookieParser from 'cookie-parser'
 
 async function bootstrap() {
-  const logger = new CustomLogger(settings.appName)
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger, rawBody: true })
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { rawBody: true })
+  const logger = app.get(WINSTON_MODULE_NEST_PROVIDER)
+  app.useLogger(logger)
   app.use(cookieParser())
 
   app.enableCors({
@@ -37,7 +38,7 @@ async function bootstrap() {
   }
 }
 
-export const configure = async (app: NestExpressApplication, logger: CustomLogger): Promise<void> => {
+export const configure = async (app: NestExpressApplication, logger: LoggerService): Promise<void> => {
   // app.useStaticAssets(path.join(__dirname, settings.frontendFiles))
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }))

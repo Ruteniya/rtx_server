@@ -1,4 +1,5 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common'
+import { APP_INTERCEPTOR } from '@nestjs/core'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { GamesModule } from './games/games.module'
@@ -20,7 +21,10 @@ import { AnswerEntity } from './nodes/entities/answer.entity'
 import { ResultEntity } from './results/entities/result.entity'
 import { NodeCategoryEntity } from './nodes/entities/node-category.entity'
 // import { ServeStaticModule } from '@nestjs/serve-static'
-import { S3Module } from './s3/s3.module';
+import { S3Module } from './s3/s3.module'
+import { WinstonModule } from 'nest-winston'
+import { winstonConfig } from './utils/winston.config'
+import { HttpLoggingInterceptor } from './interceptors/http-logging.interceptor'
 // import * as path from 'path'
 
 @Module({
@@ -42,10 +46,18 @@ import { S3Module } from './s3/s3.module';
     UsersModule,
     NodesModule,
     ResultsModule,
-    S3Module
+    S3Module,
+    WinstonModule.forRoot(winstonConfig)
   ],
   controllers: [AppController],
-  providers: [AppService, Seeder]
+  providers: [
+    AppService,
+    Seeder,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: HttpLoggingInterceptor
+    }
+  ]
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
