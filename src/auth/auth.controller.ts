@@ -2,7 +2,7 @@ import { Controller, Get, Post, Param, UseGuards, Req, Res, Query } from '@nestj
 import { AuthService } from './auth.service'
 import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard'
 import { Pto } from 'rtxtypes'
-import { Response } from 'express'
+import { CookieOptions, Response } from 'express'
 import { UsersService } from 'src/users/users.service'
 import { settings } from 'src/settings'
 import { JwtAuth, User } from 'src/decorators'
@@ -52,18 +52,21 @@ export class AuthController {
     res.clearCookie('access_token', {
       httpOnly: true,
       secure: true,
-      sameSite: 'none' as const,
+      sameSite: settings.env.isProduction ? 'lax' : 'none' as const,
+      domain: settings.env.isProduction ? '.ruteniya.space' : undefined,
       maxAge: 0
     })
     res.status(200).json({ message: 'Logout successful' })
   }
 
   private setTokenToCookie(res: Response, accessToken: string) {
-    const cookieOptions = {
+    const cookieOptions: CookieOptions = {
       httpOnly: true,
-      secure: true,         // HTTPS in prod
-      sameSite: 'none' as const,
-      maxAge: settings.jwt.cookieExpiresIn
+      secure: true, // Завжди true, бо на Railway/Vercel є SSL
+      sameSite: settings.env.isProduction ? 'lax' : 'none' as const,
+      maxAge: settings.jwt.cookieExpiresIn,
+      path: '/', 
+      domain: settings.env.isProduction ? '.ruteniya.space' : undefined,
     }
     res.cookie('access_token', accessToken, cookieOptions)
   }
