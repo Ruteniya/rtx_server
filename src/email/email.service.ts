@@ -25,21 +25,31 @@ export class EmailService {
   ): Promise<{ email: string; groupId: string; success: boolean; error?: string }[]> {
     const results: { email: string; groupId: string; success: boolean; error?: string }[] = []
 
-    const subject = `Код вашої команди для гри "${game.name}"`
+    const subject = `Код вашої команди для гри «${game.name}»`
+
     const text = `
-Привіт!
-
-Ви зареєстровані для гри "${game.name}". 
-Назва команди: ${group.name}.
-
-Код вашої команди: 
-
-${group.id}
-
-Посилання на гру: ${process.env.FRONTEND_LINK}
-
-Бажаємо успіху!
+    Привіт! 👋
+    
+    Ви успішно зареєстровані для гри «${game.name}».
+    
+    ━━━━━━━━━━━━━━━━━━━━
+    Назва команди:
+    ${group.name}
+    
+    Код вашої команди:
+    ${group.id}
+    ━━━━━━━━━━━━━━━━━━━━
+    
+    ❗ Важливо:
+    Скопіюйте цей код та використайте його під час реєстрації в програмі.
+    
+    Посилання на гру:
+    ${process.env.FRONTEND_LINK}
+    
+    Бажаємо успіху та гарної гри!
+    Команда ${settings.teamName}
     `
+    
 
     for (const email of group.emails) {
       try {
