@@ -43,8 +43,7 @@ export class HttpLoggingInterceptor implements NestInterceptor {
             method,
             url,
             statusCode,
-            duration: `${duration}ms`,
-            responseSize: data ? JSON.stringify(data).length : 0
+            duration: `${duration}ms`
           })
         },
         error: (error) => {
