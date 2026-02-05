@@ -12,6 +12,7 @@ import {
 import { CategoryEntity } from 'src/categories/entities/category.entity'
 import { ResultEntity } from 'src/results/entities/result.entity'
 import { UserEntity } from 'src/users/entities/user.entity'
+import { GroupEmailResultEntity } from './group-email-result.entity'
 
 export interface GroupAttributes {
   id: string
@@ -62,4 +63,7 @@ export class GroupEntity extends Model<GroupAttributes, CreationAttributes> {
 
   @HasMany(() => ResultEntity)
   declare results: ResultEntity[]
+
+  @HasMany(() => GroupEmailResultEntity)
+  declare emailResults: GroupEmailResultEntity[]
 }

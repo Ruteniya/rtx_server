@@ -26,6 +26,7 @@ import { WinstonModule } from 'nest-winston'
 import { winstonConfig } from './utils/winston.config'
 import { HttpLoggingInterceptor } from './interceptors/http-logging.interceptor'
 import { EmailModule } from './email/email.module';
+import { GroupEmailResultEntity } from './groups/entities/group-email-result.entity'
 // import * as path from 'path'
 
 @Module({
@@ -36,7 +37,7 @@ import { EmailModule } from './email/email.module';
     // }),
     SequelizeModule.forRoot({
       ...postgresSettings,
-      models: [UserEntity, CategoryEntity, GroupEntity, NodeEntity, AnswerEntity, ResultEntity, NodeCategoryEntity],
+      models: [UserEntity, CategoryEntity, GroupEntity, NodeEntity, AnswerEntity, ResultEntity, NodeCategoryEntity, GroupEmailResultEntity],
       autoLoadModels: true, // Automatically load models
     }),
     GamesModule,

@@ -8,9 +8,10 @@ import { UserEntity } from 'src/users/entities/user.entity'
 import { S3Module } from 'src/s3/s3.module'
 import { GamesModule } from 'src/games/games.module'
 import { EmailModule } from 'src/email/email.module'
+import { GroupEmailResultEntity } from './entities/group-email-result.entity'
 
 @Module({
-  imports: [SequelizeModule.forFeature([GroupEntity, CategoryEntity, UserEntity]), S3Module, EmailModule, GamesModule],
+  imports: [SequelizeModule.forFeature([GroupEntity, CategoryEntity, UserEntity, GroupEmailResultEntity]), S3Module, EmailModule, GamesModule],
   controllers: [GroupsController],
   providers: [GroupsService],
   exports: [GroupsService]

@@ -52,7 +52,7 @@
     "pg-hstore": "^2.3.4",
     "reflect-metadata": "^0.2.2",
     "resend": "^6.9.1",
-    "rtxtypes": "1.1.13",
+    "rtxtypes": "1.1.15",
     "rxjs": "^7.8.1",
     "sequelize": "^6.37.5",
     "sequelize-typescript": "^2.1.6",
