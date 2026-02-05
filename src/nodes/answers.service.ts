@@ -205,10 +205,12 @@ export class AnswersService {
 
     const existingAnswer = await this.answerRepo.findOne({ where: { groupId, nodeId } })
 
-    let finalAnswerValue: string
+    if (existingAnswer && existingAnswer.correct) throw new ForbiddenException('Відповідь вже оцінена')
+
+    let finalAnswerValue
 
     // If file is provided, upload it to S3
-    if (answerFile) {
+    if (answerFile && node.answerType === Pto.Nodes.AnswerType.Photo) {
       finalAnswerValue = await this.s3Service.uploadFile(answerFile, ANSWERS_DIRECTORY)
       // Delete old file if updating an existing answer
       if (existingAnswer && existingAnswer.answerValue?.startsWith(`${ANSWERS_DIRECTORY}/`)) {
@@ -218,21 +220,14 @@ export class AnswersService {
           console.warn('Failed to delete old answer file from S3', e)
         }
       }
+    } else if (answerValue && node.answerType === Pto.Nodes.AnswerType.Text) {
+      finalAnswerValue = answerValue
     } else {
-      finalAnswerValue = answerValue!
-      // If updating and old value was a file, delete it
-      if (existingAnswer && existingAnswer.answerValue?.startsWith(`${ANSWERS_DIRECTORY}/`)) {
-        try {
-          await this.s3Service.deleteFile(existingAnswer.answerValue)
-        } catch (e) {
-          console.warn('Failed to delete old answer file from S3', e)
-        }
-      }
+      finalAnswerValue = existingAnswer?.answerValue
     }
 
     let finalAnswer
     if (existingAnswer) {
-      if (existingAnswer.correct) throw new ForbiddenException(Pto.Errors.Messages.ANSWER_ALREADY_EXISTS)
       /// update and set processed and correct to false
       finalAnswer = await existingAnswer.update({
         answerValue: finalAnswerValue,
