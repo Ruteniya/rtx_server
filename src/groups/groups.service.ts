@@ -214,10 +214,7 @@ export class GroupsService {
       throw new NotFoundException(Pto.Errors.Messages.GROUP_NOT_FOUND)
     }
     const results: { email: string; groupId: string; success: boolean; info?: any; error?: string }[] = []
-    const connection = await this.emailService.verifyConnection()
-    if (!connection) {
-      throw new BadRequestException('Не вдалося підключитися до SMTP')
-    }
+
     for (const group of groups) {
       const result = await this.emailService.sendGroupCodeEmail(game, group)
       results.push(...result)

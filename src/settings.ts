@@ -39,6 +39,7 @@ export const postgresSettings = env.isProduction
 export const settings = {
   env,
   appName: 'rtx-backend',
+  teamName: 'RTX Team',
   port: parseInt(process.env.PORT || '4444'),
   logger: {
     levels: env.isTest ? [] : (['error', 'warn', 'log'] as LogLevel[]),
@@ -77,6 +78,11 @@ export const settings = {
     requireTLS: process.env.SMTP_REQUIRE_TLS === 'true',
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
+  },
+  resend: {
+    apiKey: process.env.RESEND_API_KEY,
+    from: process.env.RESEND_FROM,
+    replyTo: process.env.RESEND_REPLY_TO
   }
 }
 

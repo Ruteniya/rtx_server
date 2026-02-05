@@ -51,6 +51,7 @@
     "pg": "^8.13.3",
     "pg-hstore": "^2.3.4",
     "reflect-metadata": "^0.2.2",
+    "resend": "^6.9.1",
     "rtxtypes": "1.1.13",
     "rxjs": "^7.8.1",
     "sequelize": "^6.37.5",
