@@ -43,12 +43,12 @@ export class EmailService {
     ❗ Важливо:
     Скопіюйте цей код та використайте його під час реєстрації в програмі.
     
-    Посилання на гру:
-    ${process.env.FRONTEND_LINK}
-    
     Бажаємо успіху та гарної гри!
     Команда ${settings.teamName}
     `
+
+    // Посилання на гру:
+    // ${process.env.FRONTEND_LINK}
     
 
     for (const email of group.emails) {
