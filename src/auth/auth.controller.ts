@@ -45,24 +45,26 @@ export class AuthController {
     this.setTokenToCookie(res, accessToken)
     return res.json(returnedUser)
   }
-
+  
   @JwtAuth()
   @Post('logout')
   async logout(@Res() res): Promise<void> {
     res.clearCookie('access_token', {
       httpOnly: true,
-      secure: settings.env.isProduction,
+      secure: true,
+      sameSite: 'none' as const,
       maxAge: 0
     })
     res.status(200).json({ message: 'Logout successful' })
   }
 
   private setTokenToCookie(res: Response, accessToken: string) {
-    res.cookie('access_token', accessToken, {
+    const cookieOptions = {
       httpOnly: true,
-      secure: true,
-      sameSite: 'none',
+      secure: true,         // HTTPS in prod
+      sameSite: 'none' as const,
       maxAge: settings.jwt.cookieExpiresIn
-    })
+    }
+    res.cookie('access_token', accessToken, cookieOptions)
   }
 }
