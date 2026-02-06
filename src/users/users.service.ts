@@ -103,14 +103,13 @@ export class UsersService {
   async getAll(query: Pto.Users.UsersListQuery): Promise<Pto.Users.UserList> {
     const { searchText, page = 1, size = 10 } = query
     const where: WhereOptions<UserAttributes> = {}
-    if (searchText) {
-      const lowerSearch = searchText.toLowerCase()
 
+    if (searchText) {
       where[Op.or] = [
-        Sequelize.literal(`LOWER(email) LIKE LOWER('%${lowerSearch}%')`),
-        Sequelize.literal(`LOWER(firstName) LIKE LOWER('%${lowerSearch}%')`),
-        Sequelize.literal(`LOWER(lastName) LIKE LOWER('%${lowerSearch}%')`),
-        Sequelize.literal(`LOWER(\`group\`.name) LIKE LOWER('%${lowerSearch}%')`)
+        { email: { [Op.iLike]: `%${searchText}%` } },
+        { firstName: { [Op.iLike]: `%${searchText}%` } },
+        { lastName: { [Op.iLike]: `%${searchText}%` } },
+        { '$group.name$': { [Op.iLike]: `%${searchText}%` } }
       ]
     }
 
