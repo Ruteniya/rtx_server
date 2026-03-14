@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { Resend } from 'resend';
+import { Resend } from 'resend'
 import { Pto } from 'rtxtypes'
-import { settings } from 'src/settings';
+import { settings } from 'src/settings'
 
 @Injectable()
 export class EmailService {
@@ -25,6 +25,8 @@ export class EmailService {
   ): Promise<{ email: string; groupId: string; success: boolean; error?: string }[]> {
     const results: { email: string; groupId: string; success: boolean; error?: string }[] = []
 
+    const loginLink = `${settings.frontendLink}/login?code=${encodeURIComponent(group.id)}`
+
     const subject = `Код вашої команди для гри «${game.name}»`
 
     const text = `
@@ -36,20 +38,15 @@ export class EmailService {
     Назва команди:
     ${group.name}
     
-    Код вашої команди:
-    ${group.id}
     ━━━━━━━━━━━━━━━━━━━━
     
-    ❗ Важливо:
-    Скопіюйте цей код та використайте його під час реєстрації в програмі.
+    ❗ Перейдіть за посиланням для реєстрації:
+    ${loginLink}
+    
     
     Бажаємо успіху та гарної гри!
     Команда ${settings.teamName}
     `
-
-    // Посилання на гру:
-    // ${process.env.FRONTEND_LINK}
-    
 
     for (const email of group.emails) {
       try {

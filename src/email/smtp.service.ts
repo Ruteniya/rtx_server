@@ -34,7 +34,12 @@ export class SMTPService {
     }
   }
 
-  async sendGroupCodeEmail(game: Pto.Games.Game, group: Pto.Groups.Group): Promise<{ email: string; groupId: string; success: boolean; info?: any; error?: string }[]> {
+  async sendGroupCodeEmail(
+    game: Pto.Games.Game,
+    group: Pto.Groups.Group
+  ): Promise<{ email: string; groupId: string; success: boolean; info?: any; error?: string }[]> {
+    const loginLink = `${settings.frontendLink}/login?code=${encodeURIComponent(group.id)}`
+
     const subject = `Код вашої команди для гри "${game.name}"`
     const text = `
     Привіт! 👋
@@ -45,18 +50,14 @@ export class SMTPService {
     Назва команди:
     ${group.name}
     
-    Код вашої команди:
-    ${group.id}
     ━━━━━━━━━━━━━━━━━━━━
     
-    ❗ Важливо:
-    Скопіюйте цей код та використайте його під час реєстрації в програмі.
-    
+    ❗ Перейдіть за посиланням (код команди вже буде підставлений):
+    ${loginLink}
+        
     Бажаємо успіху та гарної гри!
     Команда ${settings.teamName}
     `
-
-    // Посилання на гру: ${process.env.FRONTEND_LINK}
 
     const results: { email: string; groupId: string; success: boolean; info?: any; error?: string }[] = []
 
