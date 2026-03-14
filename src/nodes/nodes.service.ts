@@ -150,7 +150,7 @@ export class NodesService {
   }
 
   async findAllNodesSmall(options: Pto.Nodes.NodesListQuery): Promise<Pto.Nodes.NodeSmallList> {
-    const {page = 1, size = 10, searchText, categoryIds } = options
+    const { page = 1, size = 10, searchText, categoryIds } = options
     const offset = (page - 1) * size
 
     const where: WhereOptions<NodeAttributes> = {}
@@ -191,10 +191,7 @@ export class NodesService {
       attributes: ['id', 'name', 'answerType', 'question', 'points', 'color'],
       where,
       order: [
-        [
-          Sequelize.literal(`CASE WHEN "NodeEntity"."name" ~ '^[0-9]' THEN 1 ELSE 0 END`),
-          'ASC'
-        ],
+        [Sequelize.literal(`CASE WHEN "NodeEntity"."name" ~ '^[0-9]' THEN 1 ELSE 0 END`), 'ASC'],
         [
           Sequelize.literal(`CASE 
             WHEN "NodeEntity"."name" ~ '^[0-9]+' THEN CAST((regexp_match("NodeEntity"."name", '^([0-9]+)'))[1] AS INTEGER)
@@ -215,10 +212,7 @@ export class NodesService {
     const nodes = await this.nodeRepo.findAll({
       include: [CategoryEntity],
       order: [
-        [
-          Sequelize.literal(`CASE WHEN "NodeEntity"."name" ~ '^[0-9]' THEN 1 ELSE 0 END`),
-          'ASC'
-        ],
+        [Sequelize.literal(`CASE WHEN "NodeEntity"."name" ~ '^[0-9]' THEN 1 ELSE 0 END`), 'ASC'],
         [
           Sequelize.literal(`CASE 
             WHEN "NodeEntity"."name" ~ '^[0-9]+' THEN CAST((regexp_match("NodeEntity"."name", '^([0-9]+)'))[1] AS INTEGER)
@@ -236,10 +230,7 @@ export class NodesService {
   async findAllNodes(): Promise<Pto.Nodes.NodeList> {
     const nodes = await this.nodeRepo.findAll({
       order: [
-        [
-          Sequelize.literal(`CASE WHEN "NodeEntity"."name" ~ '^[0-9]' THEN 1 ELSE 0 END`),
-          'ASC'
-        ],
+        [Sequelize.literal(`CASE WHEN "NodeEntity"."name" ~ '^[0-9]' THEN 1 ELSE 0 END`), 'ASC'],
         [
           Sequelize.literal(`CASE 
             WHEN "NodeEntity"."name" ~ '^[0-9]+' THEN CAST((regexp_match("NodeEntity"."name", '^([0-9]+)'))[1] AS INTEGER)
@@ -347,5 +338,37 @@ export class NodesService {
     }
 
     await node.destroy()
+  }
+
+  async deleteNodesWithoutAnswers(): Promise<{ deleted: number }> {
+    const nodeIdsWithAnswers = (await this.answerRepo.findAll({ attributes: ['nodeId'], raw: true })).map(
+      (r) => r.nodeId
+    )
+    const uniqueNodeIdsWithAnswers = [...new Set(nodeIdsWithAnswers)]
+
+    const where: WhereOptions<NodeAttributes> =
+      uniqueNodeIdsWithAnswers.length > 0 ? { id: { [Op.notIn]: uniqueNodeIdsWithAnswers } } : {}
+
+    const nodesToDelete = await this.nodeRepo.findAll({ where })
+
+    for (const node of nodesToDelete) {
+      if (node.questionImage) {
+        try {
+          await this.s3Service.deleteFile(node.questionImage)
+        } catch (e) {
+          console.warn('Не вдалося видалити questionImage з S3', node.questionImage, e)
+        }
+      }
+      if (node.correctAnswer && node.answerType === Pto.Nodes.AnswerType.Photo) {
+        try {
+          await this.s3Service.deleteFile(node.correctAnswer)
+        } catch (e) {
+          console.warn('Не вдалося видалити correctAnswer з S3', node.correctAnswer, e)
+        }
+      }
+      await node.destroy()
+    }
+
+    return { deleted: nodesToDelete.length }
   }
 }

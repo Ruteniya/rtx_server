@@ -99,6 +99,12 @@ export class NodesController {
   }
 
   @SystemAuth()
+  @Delete('without-answers')
+  deleteWithoutAnswers() {
+    return this.nodesService.deleteNodesWithoutAnswers()
+  }
+
+  @SystemAuth()
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.nodesService.removeNode(id)
