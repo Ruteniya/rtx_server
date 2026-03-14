@@ -11,6 +11,7 @@ import { S3Module } from 'src/s3/s3.module'
 @Module({
   imports: [SequelizeModule.forFeature([ResultEntity, GroupEntity, NodeEntity, AnswerEntity]), S3Module],
   controllers: [ResultsController],
-  providers: [ResultsService]
+  providers: [ResultsService],
+  exports: [ResultsService]
 })
 export class ResultsModule {}

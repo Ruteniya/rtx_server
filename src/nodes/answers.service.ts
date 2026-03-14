@@ -10,6 +10,7 @@ import { CategoryEntity } from 'src/categories/entities/category.entity'
 import { S3Service } from 'src/s3/s3.service'
 import { Multer } from 'multer'
 import { GroupsService } from 'src/groups/groups.service'
+import { ResultsService } from 'src/results/results.service'
 
 const ANSWERS_DIRECTORY = 'answers'
 
@@ -24,7 +25,9 @@ export class AnswersService {
 
     private readonly groupsService: GroupsService,
 
-    private readonly s3Service: S3Service
+    private readonly s3Service: S3Service,
+
+    private readonly resultsService: ResultsService
   ) {}
 
   private async mapAnswerToPto(answer: AnswerEntity, node: NodeEntity): Promise<Pto.Answers.Answer> {
@@ -269,5 +272,29 @@ export class AnswersService {
     })
 
     await Promise.all(updatePromises)
+  }
+
+  async deleteAllAnswers(): Promise<void> {
+    const answers = await this.answerRepo.findAll({
+      include: [NodeEntity],
+      attributes: ['id', 'answerValue', 'nodeId']
+    })
+
+    for (const answer of answers) {
+      const isPhotoAnswer =
+        answer.node?.answerType === Pto.Nodes.AnswerType.Photo &&
+        answer.answerValue?.startsWith(`${ANSWERS_DIRECTORY}/`)
+
+      if (isPhotoAnswer && answer.answerValue) {
+        try {
+          await this.s3Service.deleteFile(answer.answerValue)
+        } catch (e) {
+          console.warn('Failed to delete answer file from S3', answer.answerValue, e)
+        }
+      }
+    }
+
+    await this.resultsService.deleteAllResults()
+    await this.answerRepo.destroy({ where: {} })
   }
 }

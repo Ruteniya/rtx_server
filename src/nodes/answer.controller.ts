@@ -6,6 +6,7 @@ import {
   ValidationPipe,
   Query,
   Patch,
+  Delete,
   UsePipes,
   Res,
   Param,
@@ -82,5 +83,11 @@ export class AnswerController {
   @Patch('/evaluate')
   evaluateAnswers(@Body(ValidationPipe) evaluateAnswersDto: Dto.Answers.EvaluateAnswerDto[]) {
     return this.answerService.evaluateAnswers(evaluateAnswersDto)
+  }
+
+  @AdminAuth()
+  @Delete()
+  deleteAllAnswers() {
+    return this.answerService.deleteAllAnswers()
   }
 }

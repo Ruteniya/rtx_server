@@ -54,6 +54,10 @@ export class ResultsService {
     return stringValue
   }
 
+  async deleteAllResults(): Promise<void> {
+    await this.resultRepo.destroy({ where: {} })
+  }
+
   async generateResults() {
     return this.resultRepo.sequelize?.transaction(async (transaction) => {
       await this.resultRepo.destroy({
@@ -127,10 +131,7 @@ export class ResultsService {
             attributes: []
           }
         ],
-        attributes: [
-          'id',
-          [fn('COALESCE', fn('SUM', col('results.earnedPoints')), 0), 'totalPoints']
-        ],
+        attributes: ['id', [fn('COALESCE', fn('SUM', col('results.earnedPoints')), 0), 'totalPoints']],
         group: ['GroupEntity.id'],
         order: [[literal('"totalPoints"'), sortOrder]]
       })

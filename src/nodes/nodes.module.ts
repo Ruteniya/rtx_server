@@ -11,13 +11,15 @@ import { S3Module } from 'src/s3/s3.module'
 import { CategoryEntity } from 'src/categories/entities/category.entity'
 import { NodeCategoryEntity } from './entities/node-category.entity'
 import { GroupsModule } from 'src/groups/groups.module'
+import { ResultsModule } from 'src/results/results.module'
 
 @Module({
   imports: [
     SequelizeModule.forFeature([NodeEntity, AnswerEntity, CategoryEntity, NodeCategoryEntity]),
     GroupsModule,
     GamesModule,
-    S3Module
+    S3Module,
+    ResultsModule
   ],
   controllers: [NodesController, AnswerController],
   providers: [NodesService, AnswersService]
