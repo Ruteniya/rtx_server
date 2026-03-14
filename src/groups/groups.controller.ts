@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UsePipes, ValidationPipe } from '@nestjs/common'
 import { GroupsService } from './groups.service'
 import { Dto } from 'src/dto'
 import { Pto } from 'rtxtypes'
@@ -53,6 +53,13 @@ export class GroupsController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return this.groupsService.remove(id)
+  }
+
+  @SystemAuth()
+  @Post('bulk-delete')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  async bulkRemove(@Body() dto: Dto.Groups.BulkDeleteGroupsDto) {
+    return this.groupsService.bulkRemove(dto.groupIds)
   }
 
   @SystemAuth()

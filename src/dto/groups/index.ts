@@ -1,3 +1,4 @@
+export * from './bulk-delete-groups.dto'
 export * from './create-group-from-csv.dto'
 export * from './create-group.dto'
 export * from './send-emails.dto'

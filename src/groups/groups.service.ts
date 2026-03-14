@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { GroupEntity } from './entities/group.entity'
 import { Pto } from 'rtxtypes'
@@ -18,6 +18,9 @@ export class GroupsService {
     private readonly groupRepo: typeof GroupEntity,
 
     @InjectModel(CategoryEntity) private readonly categoryRepo: typeof CategoryEntity,
+
+    @InjectModel(UserEntity)
+    private readonly userRepo: typeof UserEntity,
 
     @Inject(EmailService)
     private readonly emailService: EmailService,
@@ -112,24 +115,25 @@ export class GroupsService {
 
     return createdGroups
   }
-  
+
   async findAll(query: Pto.Groups.GroupsListQuery): Promise<Pto.Groups.GroupList> {
     const { searchText, categoryIds, page = 1, size = 10 } = query
-  
+
     let hasEmailResults: boolean | undefined
 
     if (query.hasEmailResults === undefined) {
       hasEmailResults = undefined // not provided → all groups
     } else {
-      hasEmailResults = typeof query.hasEmailResults === 'boolean' ? query.hasEmailResults : query.hasEmailResults === 'true'
+      hasEmailResults =
+        typeof query.hasEmailResults === 'boolean' ? query.hasEmailResults : query.hasEmailResults === 'true'
     }
-  
+
     const offset = (page - 1) * size
     const replacements: Record<string, any> = { limit: size, offset }
-  
+
     // 1️⃣ Build WHERE clauses
     let whereClauses: string[] = []
-  
+
     if (searchText) {
       replacements.searchText = `%${searchText}%`
       const parsedParticipants = Number(searchText)
@@ -139,22 +143,22 @@ export class GroupsService {
         replacements.parsedParticipants = parsedParticipants
       }
     }
-  
+
     if (categoryIds) {
       const ids = Array.isArray(categoryIds) ? categoryIds : [categoryIds]
       whereClauses.push(`g."categoryId" IN (:categoryIds)`)
       replacements.categoryIds = ids
     }
-  
+
     const whereSQL = whereClauses.length ? `WHERE ${whereClauses.join(' AND ')}` : ''
-  
+
     // 2️⃣ Build HAVING clause for emailResults
     let havingClause = ''
     if (hasEmailResults === true) havingClause = 'HAVING COUNT(er.id) > 0'
     else if (hasEmailResults === false) havingClause = 'HAVING COUNT(er.id) = 0'
-  
+
     replacements.hasEmailResults = hasEmailResults === true ? true : null
-  
+
     // 3️⃣ Count total matching groups
     const countSQL = `
       SELECT COUNT(*) AS total
@@ -168,13 +172,13 @@ export class GroupsService {
         ${havingClause}
       ) sub
     `
-  
+
     const countResult = await this.sequelize.query(countSQL, {
       type: QueryTypes.SELECT,
       replacements
     })
     const total = Number((countResult[0] as { total: string | number }).total)
-  
+
     // 4️⃣ Get paginated data
     const dataSQL = `
       SELECT 
@@ -193,12 +197,12 @@ export class GroupsService {
       ORDER BY g.name ASC
       LIMIT :limit OFFSET :offset
     `
-  
+
     const results = await this.sequelize.query(dataSQL, {
       type: QueryTypes.SELECT,
       replacements
     })
-  
+
     // 5️⃣ Map results to your DTO
     const items: Pto.Groups.GroupList['items'] = results.map((row: any) => ({
       id: row.id,
@@ -214,10 +218,9 @@ export class GroupsService {
       emails: row.emails,
       emailResults: row.emailResults
     }))
-  
+
     return { total, items }
   }
-  
 
   async findPopulatedOne(id: string): Promise<Pto.Groups.PopulatedGroup> {
     const group = await this.groupRepo.findByPk(id, {
@@ -285,7 +288,48 @@ export class GroupsService {
     if (!group) {
       throw new NotFoundException(Pto.Errors.Messages.GROUP_NOT_FOUND)
     }
+
+    const systemAdminInGroup = await this.userRepo.findOne({
+      where: { groupId: id, role: Pto.Users.UserRole.SystemAdmin }
+    })
+    if (systemAdminInGroup) {
+      throw new ForbiddenException('Не можна видалити групу, в якій є системний адміністратор')
+    }
+
+    await this.groupEmailResultRepo.destroy({ where: { groupId: id } })
+    await this.userRepo.destroy({ where: { groupId: id } })
     await group.destroy()
+  }
+
+  async bulkRemove(groupIds: string[]): Promise<{ deleted: string[]; skipped: string[] }> {
+    const deleted: string[] = []
+    const skipped: string[] = []
+
+    for (const id of groupIds) {
+      const group = await this.groupRepo.findByPk(id)
+      if (!group) continue
+
+      const hasSystemAdmin = await this.userRepo.findOne({
+        where: { groupId: id, role: Pto.Users.UserRole.SystemAdmin }
+      })
+
+      await this.groupEmailResultRepo.destroy({ where: { groupId: id } })
+      await this.userRepo.destroy({
+        where: {
+          groupId: id,
+          role: { [Op.ne]: Pto.Users.UserRole.SystemAdmin }
+        }
+      })
+
+      if (hasSystemAdmin) {
+        skipped.push(id)
+      } else {
+        await group.destroy()
+        deleted.push(id)
+      }
+    }
+
+    return { deleted, skipped }
   }
 
   //seed
