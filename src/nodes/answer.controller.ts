@@ -15,7 +15,7 @@ import {
   BadRequestException
 } from '@nestjs/common'
 import { Dto } from 'src/dto'
-import { AdminAuth, Auth, User } from 'src/decorators'
+import { AdminAuth, Auth, SystemAuth, User } from 'src/decorators'
 import { JwtUser } from 'src/auth/types/auth.jwtPayload'
 import { AnswersService } from './answers.service'
 import { GamesService } from 'src/games/games.service'
@@ -85,7 +85,7 @@ export class AnswerController {
     return this.answerService.evaluateAnswers(evaluateAnswersDto)
   }
 
-  @AdminAuth()
+  @SystemAuth()
   @Delete()
   deleteAllAnswers() {
     return this.answerService.deleteAllAnswers()
