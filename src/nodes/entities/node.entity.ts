@@ -70,7 +70,7 @@ export class NodeEntity extends Model<NodeAttributes, CreationAttributes> {
   @Column({ allowNull: false })
   declare points: number
 
-  @Column({ allowNull: true })
+  @Column({ type: DataType.TEXT('long'), allowNull: true })
   declare comment?: string
 
   @Column({ allowNull: true })
