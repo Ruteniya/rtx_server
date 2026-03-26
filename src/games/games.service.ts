@@ -56,15 +56,15 @@ export class GamesService {
 
   private async validateGameStatus(status: Pto.Games.GameStatus): Promise<void> {
     if (status === Pto.Games.GameStatus.Draft) {
-      throw new BadRequestException("Гра ще не готова до початку")
+      throw new BadRequestException('Гра ще не готова до початку')
     }
 
     if (status === Pto.Games.GameStatus.Finished) {
-      throw new BadRequestException("Гра вже закінчилась")
+      throw new BadRequestException('Гра вже закінчилась')
     }
 
     if (status === Pto.Games.GameStatus.Stopped) {
-      throw new BadRequestException("Гра призупинена")
+      throw new BadRequestException('Гра призупинена')
     }
   }
 
@@ -85,7 +85,6 @@ export class GamesService {
       status: Pto.Games.GameStatus.Draft,
       logo: logoKey
     })
-
     return await this.mapEntityToPto(game)
   }
 
@@ -120,7 +119,6 @@ export class GamesService {
     }
 
     await game.update(data)
-
     return await this.mapEntityToPto(game)
   }
 

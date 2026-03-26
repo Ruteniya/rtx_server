@@ -8,6 +8,7 @@ import { AnswerEntity } from 'src/nodes/entities/answer.entity'
 import { GroupEntity } from 'src/groups/entities/group.entity'
 import { CategoryEntity } from 'src/categories/entities/category.entity'
 import { S3Service } from 'src/s3/s3.service'
+import { RealtimeService } from 'src/realtime/realtime.service'
 
 @Injectable()
 export class ResultsService {
@@ -20,7 +21,8 @@ export class ResultsService {
 
     @InjectModel(GroupEntity)
     private readonly groupRepo: typeof GroupEntity,
-    private readonly s3Service: S3Service
+    private readonly s3Service: S3Service,
+    private readonly realtimeService: RealtimeService
   ) {}
 
   private mapGroupToResultPopulated(group: GroupEntity): Pto.Results.ResultPopulated {
@@ -59,7 +61,7 @@ export class ResultsService {
   }
 
   async generateResults() {
-    return this.resultRepo.sequelize?.transaction(async (transaction) => {
+    const transactionResult = await this.resultRepo.sequelize?.transaction(async (transaction) => {
       await this.resultRepo.destroy({
         where: {}, // Очищає всю таблицю
         transaction
@@ -105,6 +107,8 @@ export class ResultsService {
         totalAnswersProcessed += answers.length
       }
     })
+    this.realtimeService.emitResultsGenerated()
+    return transactionResult
   }
 
   async findAll(query: Pto.Results.ResultsListQuery): Promise<Pto.Results.ResultsPopulated> {
