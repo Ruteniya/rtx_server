@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
 import { Strategy, VerifyCallback } from 'passport-google-oauth20'
 import { AuthService } from '../auth.service'
@@ -22,9 +22,13 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
     }
   }
   async validate(_: string, __: string, profile: any, done: VerifyCallback) {
-    const firstName = profile.name.givenName
-    const lastName = profile.name.familyName
-    const email = profile.emails && profile.emails[0].value
+    const email = profile?.emails?.[0]?.value?.trim()?.toLowerCase()
+    if (!email) {
+      return done(new UnauthorizedException('Google account does not provide an email'), false)
+    }
+
+    const firstName = profile?.name?.givenName || profile?.displayName || 'Google'
+    const lastName = profile?.name?.familyName || '-'
 
     const user = await this.authService.validateGoogleUser({ email, firstName, lastName })
     done(null, user)
